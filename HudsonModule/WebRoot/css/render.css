@@ -1,0 +1,989 @@
+@CHARSET "UTF-8";
+
+.x-grid-cell-content {
+	font-weight: bold;
+	height: 48px;
+	text-align: center;
+	line-height: 48px;
+	vertical-align: middle;
+}
+
+.x-grid-cell-content-red {
+	font-weight: bold;
+	height: 48px;
+	text-align: center;
+	line-height: 48px;
+	vertical-align: middle;
+	color: red
+}
+
+.x-grid-cell-content-green {
+	font-weight: bold;
+	height: 48px;
+	text-align: center;
+	line-height: 48px;
+	vertical-align: middle;
+	color: green
+}
+
+.x-livesearch-match {
+	font-weight: bold;
+	background-color: yellow;
+}
+
+/* StatusBar - structure */
+.x-statusbar .x-status-text {
+	cursor: default;
+	/*
+    height: 21px;
+    line-height: 21px;
+    padding: 0 4px;
+*/
+}
+
+.x-statusbar .x-status-busy {
+	padding-left: 25px !important;
+	background: transparent no-repeat 3px 0;
+}
+
+.x-toolbar div.xtb-text
+
+.x-statusbar .x-status-text-panel {
+	border-top: 1px solid;
+	border-right: 1px solid;
+	border-bottom: 1px solid;
+	border-left: 1px solid;
+	padding: 2px 8px 2px 5px;
+}
+
+/* StatusBar word processor example styles */
+#word-status .x-status-text-panel .spacer {
+	width: 60px;
+	font-size: 0;
+	line-height: 0;
+}
+
+#word-status .x-status-busy {
+	padding-left: 25px !important;
+	background: transparent no-repeat 3px 0;
+}
+
+#word-status .x-status-saved {
+	padding-left: 25px !important;
+	background: transparent no-repeat 3px 0;
+}
+
+/* StatusBar form validation example styles */
+.x-statusbar .x-status-error {
+	cursor: pointer;
+	padding-left: 25px !important;
+	background: transparent no-repeat 3px 0;
+}
+
+.x-statusbar .x-status-valid {
+	padding-left: 25px !important;
+	background: transparent no-repeat 3px 0;
+}
+
+.x-status-error-list {
+	font: 11px tahoma, arial, verdana, sans-serif;
+	position: absolute;
+	z-index: 9999;
+	border-top: 1px solid;
+	border-right: 1px solid;
+	border-bottom: 1px solid;
+	border-left: 1px solid;
+	padding: 5px 10px;
+}
+
+.x-status-error-list li {
+	cursor: pointer;
+	list-style: disc;
+	margin-left: 10px;
+}
+
+.x-status-error-list li a {
+	text-decoration: none;
+}
+
+.x-status-error-list li a:hover {
+	text-decoration: underline;
+}
+
+/* *********************************************************** */
+/* *********************************************************** */
+/* *********************************************************** */
+
+/* StatusBar - visual */
+.x-statusbar .x-status-busy {
+	background-image: url(../images/loading.gif);
+}
+
+.x-statusbar .x-status-text-panel {
+	border-color: #99bbe8 #fff #fff #99bbe8;
+}
+
+/* StatusBar word processor example styles */
+#word-status .x-status-text {
+	color: #777;
+}
+
+#word-status .x-status-busy {
+	background-image: url(../images/saving.gif);
+}
+
+#word-status .x-status-saved {
+	background-image: url(../images/saved.png);
+}
+
+/* StatusBar form validation example styles */
+.x-statusbar .x-status-error {
+	color: #C33;
+	background-image: url(../images/exclamation.gif);
+}
+
+.x-statusbar .x-status-valid {
+	background-image: url(../images/accept.png);
+}
+
+.x-status-error-list {
+	border-color: #C33;
+	background: white;
+}
+
+.x-status-error-list li a {
+	color: #15428B;
+}
+
+.apply-car-success {
+	color: blue
+}
+
+.x-form-radio,.x-form-cb-label {
+	cursor: pointer;
+}
+
+.x-form-cb-label:HOVER {
+	text-decoration: underline;
+	color: blue;
+}
+
+/*工件已签收*/
+.dept-part-signed {
+	color: blue;
+	font-weight: bold;
+}
+
+/*司机出车信息介面----*/
+.module-sub-view {
+	background-color: #fff;
+	text-shadow: #fff 0 1px 0;
+	position: relative;
+	display: block;
+}
+
+.module-sub-view div.module-subitemlist {
+	padding: 8px 10px;
+	color: #333;
+	font-size: 14px;
+	font-weight: bold;
+	font-family: "微软雅黑", sans-serif;
+	overflow: hidden;
+	/* border-bottom: 1px solid #DCDCDC;*/
+	cursor: pointer;
+}
+
+.module-sub-view div.module-subitemlist-hover {
+	background-color: #eee;
+}
+
+.module-sub-view .x-item-selected {
+	background-color: #D3E1F1 !important;
+}
+
+.module-sub-view div.module-subitemlist strong {
+	color: #000;
+	display: block;
+}
+
+.module-sub-view div.module-subitemlist span {
+	display: inline-block;
+	width: 24px;
+	height: 24px;
+	margin-right: 5px;
+}
+
+.send-bus-reason {
+	display: inline;
+}
+
+.departure-time {
+	margin-top: 10px;
+	margin-left: 10px;
+	font-size: 12px;
+	border-left: 4px solid red;
+	padding-left: 3px;
+	font-size: 12px;
+}
+
+/**模具信息示保存时*/
+.module-info-no-save {
+	color: rgb(197, 8, 114);
+	font-weight: bold;
+}
+
+.module-info-no-save td div {
+	font-weight: bold;
+}
+
+.module-info-been-save {
+	color: #006400;
+	font-weight: bold;
+}
+
+.module-info-been-save td div {
+	font-weight: bold;
+}
+
+/*加工单工件时间轴样式-------------------*/
+.axis {
+	font-weight: bold;
+	position: fixed;
+}
+
+.module-part-panel {
+	font-weight: bold;
+	font-family: 微软雅黑, 宋体;
+	font-size: 9px;
+	font-weight: bold;
+}
+
+/*开工*/
+.state-20201 {
+	color: #008B00;
+}
+
+/*暂停*/
+.state-20202 {
+	color: #FFD700;
+}
+
+/*停工*/
+.state-20203 {
+	color: #FF4500;
+}
+
+/*接收*/
+.state-20204 {
+	color:;
+}
+
+/*外发*/
+.state-20205 {
+	color:;
+}
+
+/*报废*/
+.state-20206 {
+	color:;
+}
+
+/*取消*/
+.state-20207 {
+	color:;
+}
+
+/*签收*/
+.state-20208 {
+	color: #008B00;
+}
+
+/*完工*/
+.state-20209 {
+	color: #00BFFF;
+}
+
+/*完工*/
+.state-20210 {
+	color: blue;
+}
+
+.plan-content {
+	display: none;
+}
+
+.plan-content div {
+	margin-top: 3px;
+}
+
+.plan-content .delayed {
+	color: red;
+	font-weight: bold;
+}
+
+.plan-content .exactly {
+	color: green;
+	font-weight: bold;
+}
+
+.qtip-show-up {
+	z-index: auto;
+}
+
+.module-craft {
+	float: left;
+}
+
+.module-resume {
+	padding: 0 4px;
+	border-radius: 8px;
+	color: white;
+	padding: 0 4px;
+	padding: 0 4px;
+}
+
+.module-desgin {
+	background-color: #9B30FF;
+}
+
+.module-modify {
+	background-color: #CD853F;
+}
+
+.row-urgent .x-grid-cell {
+	background-color: #8694CD !important;
+}
+
+.row-active .x-grid-cell {
+	background-color: #4D939F !important;
+}
+
+.module-new {
+	background-color: #008B8B;
+}
+/*-----------工时设定介面--------------------*/
+.module-part-time-evaluation-panel {
+	cursor: pointer;
+}
+
+.module-part-name {
+	margin-left: 20px;
+}
+
+.evaluation {
+	float: right;
+	display: block;
+	width: 30px;
+	font-weight: bold;
+	color: white;
+	border-radius: 7px;
+}
+
+.craft-evaluation {
+	margin-top: 2px;
+}
+
+.evaluation-exits {
+	background-color: green;
+}
+
+.evaluation-not-exits {
+	background-color: red;
+}
+
+.evaluation-data {
+	display: none;
+}
+
+.module-part-name {
+	font-family: 微软雅黑, 微軟雅黑, 宋体, 宋體;
+	margin-left: -6px;
+	color: white;
+	font-weight: bold;
+	font-size: 14px;
+	margin-left: -6px;
+}
+/*--模具进度条----------------------------------*/
+.progress {
+	overflow: hidden;
+	height: 20px;
+	margin: -3px -6px -4px -6px;
+	background-color: #f5f5f5;
+	-webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1)
+}
+
+.progress-bar {
+	float: left;
+	width: 0;
+	height: 100%;
+	font-size: 12px;
+	line-height: 20px;
+	color: #530479;
+	font-weight: bold;
+	text-align: center;
+	background-color: #428bca;
+	-webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+	box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+	-webkit-transition: width .6s ease;
+	transition: width .6s ease;
+	text-align: center;
+}
+
+.progress-striped .progress-bar {
+	background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15)
+		25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%,
+		rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+	background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%,
+		transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%,
+		rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+	background-size: 40px 40px
+}
+
+.progress.active .progress-bar {
+	-webkit-animation: progress-bar-stripes 2s linear infinite;
+	animation: progress-bar-stripes 2s linear infinite
+}
+
+.progress-bar-success {
+	background-color: #009999
+}
+
+.progress-bar-beta {
+	background-color: #999966
+}
+
+.progress-striped .progress-bar-success {
+	background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15)
+		25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%,
+		rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+	background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%,
+		transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%,
+		rgba(255, 255, 255, .15) 75%, transparent 75%, transparent)
+}
+
+.progress-bar-info {
+	background-color: #5bc0de
+}
+
+.progress-striped .progress-bar-info {
+	background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15)
+		25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%,
+		rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+	background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%,
+		transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%,
+		rgba(255, 255, 255, .15) 75%, transparent 75%, transparent)
+}
+
+.progress-bar-warning {
+	background-color: #f0ad4e
+}
+
+.progress-striped .progress-bar-warning {
+	background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15)
+		25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%,
+		rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+	background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%,
+		transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%,
+		rgba(255, 255, 255, .15) 75%, transparent 75%, transparent)
+}
+
+.progress-bar-danger {
+	background-color: #d9534f
+}
+
+.progress-striped .progress-bar-danger {
+	background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15)
+		25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%,
+		rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+	background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%,
+		transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%,
+		rgba(255, 255, 255, .15) 75%, transparent 75%, transparent)
+}
+/*----模具加工计划与实际排程样式--------------------------------*/
+.ext-even-row {
+	background-color: #DDEEFF;
+}
+
+.schedule-partname-box,.schedule-box,.module-part-flow {
+	margin: -3px -6px -4px -6px;
+	height: 54px;
+}
+
+.schedule-partname-box,.schedule-box {
+	text-align: center;
+}
+
+.schedule-partname-box {
+	padding-top: 18px;
+	font-weight: bold;
+	text-align: center;
+	font-size: 14px;
+}
+
+.schedule-box div {
+	padding: 4px 0 4px 0;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.schedule-box .plan {
+	height: 50%;
+}
+
+.schedule-box .actual {
+	border-top: 1px solid #D0D0D0;
+	color: rgb(180, 12, 12);
+}
+
+.module-part-plan-flow {
+	height: 50%;
+	padding: 2px;
+}
+
+.module-part-actual-flow {
+	border-top: 1px solid #D0D0D0;
+	height: 50%;
+	padding: 2px;
+}
+
+/**/
+.sch-flow-event {
+	display: inline-block;
+	width: auto;
+	margin-right: 2px;
+	height: 100%;
+	box-shadow: 1px 1px 1px rgba(150, 150, 150, 0.3);
+	position: relative;
+	border-radius: 3px;
+	border: 1px solid #aaa;
+	overflow: hidden;
+	cursor: pointer;
+	border-radius: 3px;
+	font-size: 14px;
+}
+
+.sch-flow-plan-inner {
+	color: black;
+}
+
+.sch-flow-actual-inner {
+	color: #B40C0C;
+}
+
+/*当前加工单位待加工*/
+.sch-last-flow {
+	display: inline-block;
+	min-width: 110px;
+	margin-right: 2px;
+	height: 100%;
+	box-shadow: 1px 1px 1px rgba(150, 150, 150, 0.3);
+	position: relative;
+	border-radius: 3px;
+	border: 1px solid #aaa;
+	overflow: hidden;
+	cursor: pointer;
+	border-radius: 3px;
+}
+
+.sch-flow-event-delay {
+	background: #FF6A6A url(../images/transp-1px.png) repeat-x left top;
+	color: #0000CD;
+}
+
+.sch-flow-event-normal {
+	background: lightblue url(../images/transp-1px.png) repeat-x left top;
+}
+
+.sch-flow-event-wait {
+	background: #428bca url(../images/transp-1px.png) repeat-x left top;
+}
+
+.sch-flow-event-doing {
+	background: #5cb85c url(../images/transp-1px.png) repeat-x left top;
+}
+
+.sch-flow-event-pause {
+	background: #f0ad4e url(../images/transp-1px.png) repeat-x left top;
+}
+
+.sch-flow-event-finish {
+	background: #9475d5 url(../images/transp-1px.png) repeat-x left top;
+}
+
+.sch-flow-event-out {
+	background: #3761bd url(../images/transp-1px.png) repeat-x left top;
+	color: #000000
+}
+
+.sch-flow-event:HOVER .sch-flow-resizable-handle,.sch-last-flow:HOVER .sch-flow-resizable-handle
+	{
+	visibility: visible;
+}
+
+.sch-flow-resizable-handle {
+	background: transparent url(../images/resize-handle-hor.gif) no-repeat
+		center center;
+	position: absolute;
+	visibility: hidden;
+	overflow: hidden;
+}
+
+.sch-flow-resizable-handle-start {
+	padding-left: 2px;
+	left: 0;
+}
+
+.sch-flow-resizable-handle-end {
+	padding-right: 2px;
+	right: 0;
+}
+
+.sch-flow-resizable-handle-start,.sch-flow-resizable-handle-end {
+	width: 7px;
+	height: 100%;
+	top: 0;
+}
+
+.sch-flow-event-inner {
+	overflow: hidden;
+	height: 100%;
+	white-space: nowrap;
+	margin-left: 4px;
+	margin-right: 5px;
+	margin-top: 4px;
+	overflow: hidden;
+	font-weight: bold;
+}
+
+/* jquery.Jcrop.css v0.9.12 - MIT License */
+/*
+  The outer-most container in a typical Jcrop instance
+  If you are having difficulty with formatting related to styles
+  on a parent element, place any fixes here or in a like selector
+
+  You can also style this element if you want to add a border, etc
+  A better method for styling can be seen below with .jcrop-light
+  (Add a class to the holder and style elements for that extended class)
+*/
+.jcrop-holder {
+	direction: ltr;
+	text-align: left;
+}
+/* Selection Border */
+.jcrop-vline,.jcrop-hline {
+	background: #ffffff url("../jcrop/js/Jcrop.gif");
+	font-size: 0;
+	position: absolute;
+}
+
+.jcrop-vline {
+	height: 100%;
+	width: 1px !important;
+}
+
+.jcrop-vline.right {
+	right: 0;
+}
+
+.jcrop-hline {
+	height: 1px !important;
+	width: 100%;
+}
+
+.jcrop-hline.bottom {
+	bottom: 0;
+}
+/* Invisible click targets */
+.jcrop-tracker {
+	height: 100%;
+	width: 100%;
+	/* "turn off" link highlight */
+	-webkit-tap-highlight-color: transparent;
+	/* disable callout, image save panel */
+	-webkit-touch-callout: none;
+	/* disable cut copy paste */
+	-webkit-user-select: none;
+}
+/* Selection Handles */
+.jcrop-handle {
+	background-color: #333333;
+	border: 1px #eeeeee solid;
+	width: 7px;
+	height: 7px;
+	font-size: 1px;
+}
+
+.jcrop-handle.ord-n {
+	left: 50%;
+	margin-left: -4px;
+	margin-top: -4px;
+	top: 0;
+}
+
+.jcrop-handle.ord-s {
+	bottom: 0;
+	left: 50%;
+	margin-bottom: -4px;
+	margin-left: -4px;
+}
+
+.jcrop-handle.ord-e {
+	margin-right: -4px;
+	margin-top: -4px;
+	right: 0;
+	top: 50%;
+}
+
+.jcrop-handle.ord-w {
+	left: 0;
+	margin-left: -4px;
+	margin-top: -4px;
+	top: 50%;
+}
+
+.jcrop-handle.ord-nw {
+	left: 0;
+	margin-left: -4px;
+	margin-top: -4px;
+	top: 0;
+}
+
+.jcrop-handle.ord-ne {
+	margin-right: -4px;
+	margin-top: -4px;
+	right: 0;
+	top: 0;
+}
+
+.jcrop-handle.ord-se {
+	bottom: 0;
+	margin-bottom: -4px;
+	margin-right: -4px;
+	right: 0;
+}
+
+.jcrop-handle.ord-sw {
+	bottom: 0;
+	left: 0;
+	margin-bottom: -4px;
+	margin-left: -4px;
+}
+/* Dragbars */
+.jcrop-dragbar.ord-n,.jcrop-dragbar.ord-s {
+	height: 7px;
+	width: 100%;
+}
+
+.jcrop-dragbar.ord-e,.jcrop-dragbar.ord-w {
+	height: 100%;
+	width: 7px;
+}
+
+.jcrop-dragbar.ord-n {
+	margin-top: -4px;
+}
+
+.jcrop-dragbar.ord-s {
+	bottom: 0;
+	margin-bottom: -4px;
+}
+
+.jcrop-dragbar.ord-e {
+	margin-right: -4px;
+	right: 0;
+}
+
+.jcrop-dragbar.ord-w {
+	margin-left: -4px;
+}
+/* The "jcrop-light" class/extension */
+.jcrop-light .jcrop-vline,.jcrop-light .jcrop-hline {
+	background: #ffffff;
+	filter: alpha(opacity =                     70) !important;
+	opacity: .70 !important;
+}
+
+.jcrop-light .jcrop-handle {
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	background-color: #000000;
+	border-color: #ffffff;
+	border-radius: 3px;
+}
+/* The "jcrop-dark" class/extension */
+.jcrop-dark .jcrop-vline,.jcrop-dark .jcrop-hline {
+	background: #000000;
+	filter: alpha(opacity =                     70) !important;
+	opacity: 0.7 !important;
+}
+
+.jcrop-dark .jcrop-handle {
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	background-color: #ffffff;
+	border-color: #000000;
+	border-radius: 3px;
+}
+/* Simple macro to turn off the antlines */
+.solid-line .jcrop-vline,.solid-line .jcrop-hline {
+	background: #ffffff;
+}
+/* Fix for twitter bootstrap et al. */
+.jcrop-holder img,img.jcrop-preview {
+	max-width: none;
+}
+
+#preview-pane {
+	display: block;
+	position: absolute;
+	z-index: 2000;
+	top: 10px;
+	right: -280px;
+	padding: 6px;
+	border: 1px rgba(0, 0, 0, .4) solid;
+	background-color: #FFFFF0;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	-webkit-box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+	-moz-box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+	box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* The Javascript code will set the aspect ratio of the crop
+   area based on the size of the thumbnail preview,
+   specified here */
+#preview-pane .preview-container {
+	width: 274px;
+	height: 241px;
+	overflow: hidden;
+}
+
+/**----模具三次元测量图片显示样式--------------------------------*/
+#measure-edit {
+	background-color: #F2F2F2;
+	text-shadow: #fff 0 1px 0;
+	position: relative;
+	display: block;
+	height: auto;
+}
+/**图片编辑和预览样式----*/
+#measure-edit .editpicture,#measure-edit .previewpicture,#measure-edit .deletepicture
+	{
+	display: none;
+	position: absolute;
+	width: 16px;
+	height: 16px;
+}
+
+#measure-edit div.measure-hover .previewpicture {
+	display: block;
+	top: 10px;
+	left: 10px;
+	cursor: pointer;
+}
+
+#measure-edit div.measure-hover .editpicture {
+	display: block;
+	top: 36px;
+	left: 10px;
+	cursor: pointer;
+}
+
+#measure-edit div.measure-hover .deletepicture {
+	display: block;
+	top: 10px;
+	right: 10px;
+	cursor: pointer;
+}
+
+/**图片编辑和预览样式^^^^^*/
+#measure-edit div.measure img {
+	margin-bottom: 1px;
+}
+
+#measure-edit div.measure {
+	float: left;
+	padding: 8px;
+	margin: 5px;
+	/*    margin: 10px 0 0 25px;*/
+	text-align: center;
+	line-height: 14px;
+	color: #333;
+	font-size: 12px;
+	font-family: "Helvetica Neue", sans-serif;
+	height: 206px;
+	width: 216px;
+	overflow: hidden;
+	border-top: 1px solid transparent;
+	background: #fff;
+	position: relative;
+	border-top: #f97591 3px solid;
+	border-radius: 3px;
+	zoom: 1;
+}
+
+#measure-edit div.measure-hover {
+	box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
+	-webkit-transform: translate(-2px, -2px);
+	-moz-transform: translate(-2px, -2px);
+	-ms-transform: translate(-2px, -2px);
+	-o-transform: translate(-2px, -2px);
+	transform: translate(-2px, -2px);
+	transition: all ease-in-out .1s;
+}
+
+#measure-edit .x-item-selected {
+	background-color: #D3E1F1 !important;
+	box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
+	-webkit-transform: translate(-2px, -2px);
+	-moz-transform: translate(-2px, -2px);
+	-ms-transform: translate(-2px, -2px);
+	-o-transform: translate(-2px, -2px);
+	transform: translate(-2px, -2px);
+	transition: all ease-in-out .1s;
+}
+
+#measure-edit div.measure strong {
+	color: #000;
+	display: block;
+}
+
+#measure-edit div.measure span {
+	color: #999;
+}
+/**----模具三次元测量图片显示样式---^^^^^^^^^^^^^^^^^^^^^^--------*/
+.craft-schedule-exits {
+	color: blue;
+}
+
+/**提示提示框-------------------------------*/
+.success_xubox_tips {
+	background-color: #78BA32;
+	color: #fff;
+}
+
+/**提示提示框*/
+.error_xubox_tips {
+	background-color: #FF4500;
+	color: #fff;
+}
+
+.info_xubox_tips {
+	background-color: #FF9900;
+	color: #fff;
+}
+
+/**提示提示框*/
+.xubox_tips {
+	position: relative;
+	line-height: 20px;
+	min-width: 14px;
+	padding: 3px 10px 3px 10px;
+	font-size: 24px;
+	font-weight: bold;
+	_float: left;
+	border-radius: 3px;
+	box-shadow: 1px 1px 3px rgba(0, 0, 0, .3);
+}

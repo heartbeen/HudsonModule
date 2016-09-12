@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<sqlGroup name="subfunction">
+	
+	<!-- 查询相应主模块的子模块 -->
+	<sql id="findSubModuleFunction" database="oracledialect">
+		SELECT ID||';'||'2' AS ID,TEXT AS NAME FROM SUB_FUNCTION WHERE PROJECTID=?
+	</sql>
+	
+	<!-- 查询相应主模块的子模块 -->
+	<sql id="findSubModuleFunction" database="mysqldialect">
+		SELECT CONCAT_WS(';',ID, '2') AS ID,TEXT AS NAME FROM SUB_FUNCTION WHERE PROJECTID=?
+	</sql>
+</sqlGroup>

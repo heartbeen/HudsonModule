@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<sqlGroup name="roleposition">
+	<!-- 删除角色所分配权根  mysql -->
+	<sql id="deleteRoldAuth" database="mysqldialect">
+		delete from role_pos where authid=?
+	</sql>
+	
+	<!-- 删除角色所分配权根 oracle -->
+	<sql id="deleteRoldAuth" database="oracledialect">
+		delete role_pos where authid=?
+	</sql>
+</sqlGroup>

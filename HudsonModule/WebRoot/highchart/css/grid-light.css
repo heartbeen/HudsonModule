@@ -1,0 +1,16 @@
+@font-face {
+	font-family: 'Dosis';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Dosis Regular'), local('Dosis-Regular'),
+		url(font/xIAtSaglM8LZOYdGmG1JqQ.woff) format('woff');
+}
+
+@font-face {
+	font-family: 'Dosis';
+	font-style: normal;
+	font-weight: 600;
+	src: local('Dosis SemiBold'), local('Dosis-SemiBold'),
+		url(font/f8qltGyj2S-SS_tsOHsjgfesZW2xOQ-xsNqO47m55DA.woff)
+		format('woff');
+}

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<sqlGroup name="projectmodule">
+	<!-- 得到用户所对应的模块 -->
+	<sql id="findModule" database="oracledialect">
+		SELECT NAME, ICONCLS, MODULEDEFINE, MAINPANEL || ';' || ID || ';' || TABPANEL AS MODULE, MODULEPATH,
+			MODULENAME,MPATH
+		FROM PROJECT_MODULE
+		WHERE ID IN (SELECT DISTINCT SP.PARENTID
+			FROM (
+				SELECT *
+				FROM SUB_FUNCTION
+				WHERE ID IN (SELECT DISTINCT MODULEID
+					FROM ITEM_AUTHORITY
+					WHERE AUTHID IN (SELECT AUTHID
+						FROM ROLE_POS
+						WHERE ROLEID = ?
+							OR ROLEID = ?))
+			) S
+				LEFT JOIN PROJECT_MODULE SP ON SP.ID = S.PROJECTID )
+		ORDER BY id
+	</sql>
+
+	<!-- 得到用户所对应的模块 -->
+	<sql id="findModule" database="mysqldialect">
+		SELECT NAME, ICONCLS, MODULEDEFINE, CONCAT_WS(';', MAINPANEL, ID, TABPANEL) AS MODULE, MODULEPATH,
+			MODULENAME,MPATH
+		FROM PROJECT_MODULE
+		WHERE ID IN (SELECT DISTINCT SP.PARENTID
+			FROM (SELECT *
+				FROM SUB_FUNCTION
+				WHERE ID IN (SELECT DISTINCT MODULEID
+					FROM ITEM_AUTHORITY
+					WHERE AUTHID IN (SELECT AUTHID
+						FROM ROLE_POS
+						WHERE ROLEID = ?
+							OR ROLEID = ?))
+				) S LEFT JOIN PROJECT_MODULE SP ON SP.ID = S.PROJECTID)
+		ORDER BY ID
+	</sql>
+	
+	<!-- 得到模块所对应的所有功能 -->
+	<sql id="findProjectFunction" database="oracledialect">
+		SELECT SP.NAME || ';' || SP.ICONCLS AS NAME, S.ID || ';' || S.PATH AS ID, S.TEXT AS TEXT, S.ICONCLS
+		FROM (SELECT *
+			FROM SUB_FUNCTION
+			WHERE ID IN (SELECT DISTINCT MODULEID
+				FROM ITEM_AUTHORITY
+				WHERE AUTHID IN (SELECT AUTHID
+					FROM ROLE_POS
+					WHERE ROLEID = ?
+						OR ROLEID = ?))
+			ORDER BY ID
+			) S LEFT JOIN PROJECT_MODULE SP ON SP.ID = S.PROJECTID
+		WHERE SP.PARENTID = ?
+		AND SP.TYPEID = ?
+		ORDER BY SP.ID, S.ID
+	</sql>
+	<!-- 得到模块所对应的所有功能 -->
+	<sql id="findProjectFunction" database="mysqldialect">
+		SELECT CONCAT_WS(';', SP.NAME, SP.ICONCLS) AS NAME, CONCAT_WS(';', S.ID, S.PATH) AS ID, S.TEXT AS TEXT, S.ICONCLS
+		FROM (SELECT *
+			FROM SUB_FUNCTION
+			WHERE ID IN (SELECT DISTINCT MODULEID
+				FROM ITEM_AUTHORITY
+				WHERE AUTHID IN (SELECT AUTHID
+					FROM ROLE_POS
+					WHERE ROLEID = ?
+						OR ROLEID = ?))
+			ORDER BY ID
+			) S LEFT JOIN PROJECT_MODULE SP ON SP.ID = S.PROJECTID
+		WHERE SP.PARENTID = ?
+		ORDER BY SP.ID, S.ID
+	</sql>
+	
+	<!-- 查询相应主模块的子模块 -->
+	<sql id="findSubModule" database="oracledialect">
+		SELECT ID||';'||'1' AS ID,NAME FROM PROJECT_MODULE T WHERE T.PARENTID = ?
+	</sql>
+	
+	<!-- 查询相应主模块的子模块 -->
+	<sql id="findSubModule" database="mysqldialect">
+		SELECT CONCAT_WS(';',ID, '1') AS ID,NAME FROM PROJECT_MODULE T WHERE T.PARENTID = ?
+	</sql>
+</sqlGroup>

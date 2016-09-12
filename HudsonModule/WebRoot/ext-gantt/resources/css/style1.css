@@ -1,0 +1,56 @@
+/* Style 1 */
+.style1 .sch-gantt-parenttask-bar
+{
+    box-shadow: 1px 1px 3px rgba(100, 100, 100, 0.5);
+    background:PeachPuff;
+    border-color:GoldenRod;
+}
+
+.style1 .sch-gantt-parenttask-bar .sch-gantt-progress-bar
+{
+    background:darkorange url(../images/transp-1px.png) repeat-x;
+}
+
+.style1 .sch-gantt-parenttask-arrow
+{
+    margin-top:2px;
+    width: 10px;
+    border-color:darkorange transparent;
+}
+
+.style1 .sch-gantt-task-bar
+{
+    border-radius: 15px;
+    border-color:Orchid;
+    box-shadow: 1px 1px 3px rgba(100, 100, 100, 0.5);
+}
+
+.style1 .sch-gantt-task-bar .sch-gantt-progress-bar
+{
+    background: #9CBFEE url(../images/progress.gif) repeat-x 0 -4px;
+}
+
+.style1 .x-grid-unlocked .x-grid-scroller .x-grid-row
+{
+    background:transparent !important;
+}
+
+.style1 .x-grid-unlocked .x-grid-scroller
+{
+    background:whitesmoke;
+}
+
+.style1 .sch-dependency
+{
+    border-color: MediumTurquoise;
+}
+
+.style1 .sch-gantt-task-bar .sch-gantt-progress-bar
+{
+    border-top-left-radius: 13px;
+}
+
+.style1 .other-progress-bar
+{
+    border-bottom-left-radius: 13px;
+}
