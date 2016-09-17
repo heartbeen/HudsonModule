@@ -88,10 +88,7 @@ public class PublicController extends Controller {
         MainProjectExtract mpe = new MainProjectExtract();
         mpe.setController(this);
 
-        Object auth = mpe.extract();
-        String authText = (auth == null ? null : auth + "");
-
-        renderText(authText);
+        renderJson(mpe.extract().toString());
     }
 
     /**

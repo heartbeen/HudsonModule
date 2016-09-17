@@ -19,8 +19,8 @@ public class ProjectModule extends ModelFinal<ProjectModule> {
      * 
      * @return
      */
-    public List<ProjectModule> findProjectFunction(Object roleid, Object projectId, int typeId) {
-        return find(SqlManager.sql(sqlKey("findprojectfunction")), roleid, roleid, projectId, typeId);
+    public List<ProjectModule> findProjectFunction(Object roleid, Object projectId, int typeId, String lang) {
+        return find(SqlManager.sql(sqlKey("findprojectfunction")), roleid, roleid, lang, projectId, typeId);
     }
 
     /**
@@ -29,8 +29,8 @@ public class ProjectModule extends ModelFinal<ProjectModule> {
      * @param roleid
      * @return
      */
-    public List<ProjectModule> findModule(Object roleid) {
-        return find(SqlManager.sql(sqlKey("findmodule")), roleid, roleid);
+    public List<ProjectModule> findModule(Object roleid, String locale) {
+        return find(SqlManager.sql(sqlKey("findmodule")), roleid, roleid, locale);
     }
 
     /**

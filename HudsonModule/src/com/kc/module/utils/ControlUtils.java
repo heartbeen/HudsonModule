@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -444,5 +445,33 @@ public class ControlUtils {
         }
 
         return control.getParaToBoolean(para);
+    }
+
+    /**
+     * 得到用户所选择的语言
+     * 
+     * @param control
+     * @return
+     */
+    public static String getLang(Controller control) {
+        String locale = Locale.getDefault().getLanguage() + "_" + Locale.getDefault().getCountry();
+
+        String lang = control.getCookie("lang");
+
+        if (StrKit.notBlank(lang)) {
+            // 处理旧cookie
+            if (!lang.startsWith("zh") && !lang.startsWith("en")) {
+                lang = "zh_" + lang;
+            }
+        } else {
+            // 只要不是中文国家，就统一为英文
+            if (locale.startsWith("zh")) {
+                lang = locale;
+            } else {
+                lang = "en_US";
+            }
+        }
+
+        return lang;
     }
 }

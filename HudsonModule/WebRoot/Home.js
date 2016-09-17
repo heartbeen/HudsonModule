@@ -29,14 +29,21 @@ Ext.onReady(function() {
 
 						data : [ {
 							name : '简体中文',
-							locale : 'CN'
+							locale : 'zh_CN'
 
 						}, {
 							name : '繁體中文',
-							locale : 'TW'
+							locale : 'zh_TW'
+						}, {
+							name : 'English(US)',
+							locale : 'en_US'
 						} ]
 					}),
-					value : Cookies.getCookie('lang') == 'TW' ? '繁体中文' : localLang == 'TW' ? '繁體中文' : '简体中文',
+					value : Cookies.getCookie('lang_name'),// == 'zh_TW' ?
+															// '繁体中文' :
+															// localLang ==
+															// 'zh_TW' ? '繁體中文'
+															// : '简体中文',
 					editable : false,
 					queryMode : 'local',
 					typeAhead : true,
@@ -45,6 +52,7 @@ Ext.onReady(function() {
 							// 标签切换时，保存相应兄弟厂的PODID
 
 							Cookies.setCookie("lang", records[0].data.locale, 23);
+							Cookies.setCookie("lang_name", records[0].data.name, 23);
 							window.location.reload();
 						}
 					},
@@ -75,8 +83,9 @@ Ext.onReady(function() {
 					}
 				}, {
 					xtype : 'button',
+					style:'margin-top:8px',
 					iconCls : 'user_go-16',
-					width : 60,
+					width : 150,
 					text : Login.signIn,
 					scope : me,
 					handler : me.onClickLogin
@@ -195,7 +204,7 @@ Ext.onReady(function() {
 				url : 'public/handShake',
 				success : function(resp) {
 					var backJson = Ext.JSON.decode(resp.responseText);
-					console.info(backJson);
+					
 					if (!backJson.success) {
 						window.location = '';
 					}

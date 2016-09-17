@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -13,11 +14,13 @@ import javax.servlet.http.HttpSession;
 import com.jfinal.aop.Before;
 import com.jfinal.aop.ClearInterceptor;
 import com.jfinal.core.Controller;
+import com.jfinal.kit.StrKit;
 import com.kc.module.interceptor.validator.LoginValidator;
 import com.kc.module.model.Account;
 import com.kc.module.model.Authority;
 import com.kc.module.model.ProjectModule;
 import com.kc.module.utils.ConstUtils;
+import com.kc.module.utils.ControlUtils;
 import com.kc.module.utils.StringUtils;
 
 @ClearInterceptor
@@ -29,11 +32,8 @@ public class AccountController extends Controller {
      * @throws ServletException
      * @throws IOException
      */
-
     public void index() throws ServletException, IOException {
-        // Locale loc = Locale.getDefault();
-        String lang = getCookie("lang");
-        lang = lang != null ? lang : "CN";
+        String lang = ControlUtils.getLang(this);
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
@@ -94,7 +94,7 @@ public class AccountController extends Controller {
                             setAttr("newauth", userData.get("NEWAUTH"));// 表示用户有新的授权,此值会记录到用户前台中
                         }
 
-                        roleProcess(userData.getStr("ROLEID"));
+                        roleProcess(userData.getStr("ROLEID"), ControlUtils.getLang(this));
                     }
 
                     setAttr("success", true);
@@ -120,7 +120,7 @@ public class AccountController extends Controller {
      * 
      * @param roleId
      */
-    private void roleProcess(final String roleId) {
+    private void roleProcess(final String roleId, final String locale) {
         // setAttr("modules", CacheKit.get("projectModule", roleId, new
         // IDataLoader() {
         // public Object load() {
@@ -128,7 +128,7 @@ public class AccountController extends Controller {
         // }
         // }));
 
-        setAttr("modules", ProjectModule.dao.findModule(roleId));
+        setAttr("modules", ProjectModule.dao.findModule(roleId, locale));
     }
 
     /**

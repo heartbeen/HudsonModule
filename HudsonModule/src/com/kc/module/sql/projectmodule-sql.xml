@@ -2,22 +2,31 @@
 <sqlGroup name="projectmodule">
 	<!-- 得到用户所对应的模块 -->
 	<sql id="findModule" database="oracledialect">
-		SELECT NAME, ICONCLS, MODULEDEFINE, MAINPANEL || ';' || ID || ';' || TABPANEL AS MODULE, MODULEPATH,
-			MODULENAME,MPATH
-		FROM PROJECT_MODULE
-		WHERE ID IN (SELECT DISTINCT SP.PARENTID
-			FROM (
-				SELECT *
-				FROM SUB_FUNCTION
-				WHERE ID IN (SELECT DISTINCT MODULEID
-					FROM ITEM_AUTHORITY
-					WHERE AUTHID IN (SELECT AUTHID
-						FROM ROLE_POS
-						WHERE ROLEID = ?
-							OR ROLEID = ?))
-			) S
-				LEFT JOIN PROJECT_MODULE SP ON SP.ID = S.PROJECTID )
-		ORDER BY id
+		select loc.lang_value as name, pm.*
+		  from (SELECT lang_code,
+		               ICONCLS,
+		               MODULEDEFINE,
+		               MAINPANEL || ';' || ID || ';' || TABPANEL AS MODULE,
+		               MODULEPATH,
+		               MODULENAME,
+		               MPATH
+		          FROM PROJECT_MODULE
+		         WHERE ID IN
+		               (SELECT DISTINCT SP.PARENTID
+		                  FROM (SELECT *
+		                          FROM SUB_FUNCTION
+		                         WHERE ID IN (SELECT DISTINCT MODULEID
+		                                        FROM ITEM_AUTHORITY
+		                                       WHERE AUTHID IN
+		                                             (SELECT AUTHID
+		                                                FROM ROLE_POS
+		                                               WHERE ROLEID = ?
+		                                                  OR ROLEID = ?))) S
+		                  LEFT JOIN PROJECT_MODULE SP
+		                    ON SP.ID = S.PROJECTID)) pm
+		  left join SYS_LOCALE_CONTENT_T loc
+		    on loc.lang_code = pm.lang_code
+		 where loc.locale_key = ?
 	</sql>
 
 	<!-- 得到用户所对应的模块 -->
@@ -40,7 +49,33 @@
 	
 	<!-- 得到模块所对应的所有功能 -->
 	<sql id="findProjectFunction" database="oracledialect">
-		SELECT SP.NAME || ';' || SP.ICONCLS AS NAME, S.ID || ';' || S.PATH AS ID, S.TEXT AS TEXT, S.ICONCLS
+	    SELECT SP.NAME || ';' || SP.ICONCLS AS NAME,
+	           S.ID || ';' || S.PATH AS ID,
+	           S.TEXT AS TEXT,
+	           S.ICONCLS
+	      FROM (SELECT *
+	              FROM SUB_FUNCTION
+	             WHERE ID IN (SELECT DISTINCT MODULEID
+	                            FROM ITEM_AUTHORITY
+	                           WHERE AUTHID IN (SELECT AUTHID
+	                                              FROM ROLE_POS
+	                                             WHERE ROLEID = ?
+	                                                OR ROLEID = ?))
+	             ORDER BY ID) S
+	      LEFT JOIN (select loc.lang_value as name,
+	                        pm.iconcls,
+	                        pm.id,
+	                        pm.typeid,
+	                        pm.PARENTID
+	                   from PROJECT_MODULE pm
+	                   left join SYS_LOCALE_CONTENT_T loc
+	                     on loc.lang_code = pm.lang_code
+	                  where loc.locale_key = ?) SP
+	        ON SP.ID = S.PROJECTID
+	     WHERE SP.PARENTID = ?
+	       AND SP.TYPEID = ?
+	     ORDER BY SP.ID, S.ID
+		<!-- SELECT SP.NAME || ';' || SP.ICONCLS AS NAME, S.ID || ';' || S.PATH AS ID, S.TEXT AS TEXT, S.ICONCLS
 		FROM (SELECT *
 			FROM SUB_FUNCTION
 			WHERE ID IN (SELECT DISTINCT MODULEID
@@ -53,7 +88,7 @@
 			) S LEFT JOIN PROJECT_MODULE SP ON SP.ID = S.PROJECTID
 		WHERE SP.PARENTID = ?
 		AND SP.TYPEID = ?
-		ORDER BY SP.ID, S.ID
+		ORDER BY SP.ID, S.ID -->
 	</sql>
 	<!-- 得到模块所对应的所有功能 -->
 	<sql id="findProjectFunction" database="mysqldialect">
