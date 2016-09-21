@@ -3,6 +3,10 @@
  */
 Ext.define('System.Internationalization', {
 	extend : 'Ext.panel.Panel',
+
+	requires : [ 'System.model.grid.Internationalization' ],
+	xtype : 'cell-editing',
+
 	layout : {
 		padding : 5,
 		type : 'border'
@@ -13,6 +17,7 @@ Ext.define('System.Internationalization', {
 		var me = this;
 
 		Ext.applyIf(me, {
+
 			items : [ {
 				xtype : 'container',
 				region : 'center',
@@ -33,42 +38,80 @@ Ext.define('System.Internationalization', {
 						xtype : 'numbercolumn',
 						width : 345,
 						dataIndex : 'number',
-						text : '内容'
+						text : '内容',
+						editor : {
+							allowBlank : false
+						}
 					} ]
 				}, {
 					xtype : 'gridpanel',
 					flex : 3,
 					margins : '0 0 5 0',
 					region : 'north',
-					height : 179,
 					title : '国际化代码列表',
+					plugins : [ new Ext.grid.plugin.CellEditing({
+						clicksToEdit : 1
+					}) ],
+					store : new Ext.data.Store({
+						// destroy the store if the grid is destroyed
+						storeId : 'system.model.grid.Internationalization',
+						autoDestroy : true,
+						model : System.model.grid.Internationalization,
+						proxy : {
+							type : 'ajax',
+							url : '',
+							reader : {
+								type : 'json',
+								record : 'plant'
+							}
+						}
+					}),
 					columns : [ {
 						xtype : 'gridcolumn',
-						width : 186,
-						dataIndex : 'string',
-						text : '国际化代码'
+						width : 240,
+						dataIndex : 'langcode',
+						text : '国际化代码',
+						editor : {
+							allowBlank : false
+						}
 					}, {
 						xtype : 'gridcolumn',
-						text : '所属模块'
+						text : '所属模块',
+						dataIndex : 'projectid',
+						editor : new Ext.form.field.ComboBox({
+							typeAhead : true,
+							triggerAction : 'all',
+							store : [ [ '用户', 'user' ], [ '系统', 'sys' ] ]
+						})
 					}, {
 						xtype : 'gridcolumn',
-						text : '类型'
+						text : '类型',
+						dataIndex : 'category',
+						editor : new Ext.form.field.ComboBox({
+							typeAhead : true,
+							triggerAction : 'all',
+							store : [ [ '用户', 'user' ], [ '系统', 'sys' ] ]
+						})
 					}, {
 						xtype : 'gridcolumn',
 						width : 72,
+						dataIndex : 'createby',
 						text : '创建人'
 					}, {
 						xtype : 'datecolumn',
 						width : 80,
+						dataIndex : 'createdate',
 						dataIndex : 'date',
 						text : '创建日期'
 					}, {
 						xtype : 'gridcolumn',
 						width : 77,
+						dataIndex : 'modifyby',
 						text : '修改人'
 					}, {
 						xtype : 'datecolumn',
 						dataIndex : 'date',
+						dataIndex : 'modifydate',
 						text : '修改日期'
 					} ],
 					dockedItems : [ {
@@ -81,12 +124,17 @@ Ext.define('System.Internationalization', {
 						dock : 'top',
 						items : [ {
 							xtype : 'button',
-							text : '新建 '
+							iconCls : 'appointment-new-16',
+							text : '新建 ',
+							scope : this,
+							handler : this.onAddClick
 						}, {
 							xtype : 'button',
+							iconCls : 'edit-delete-16',
 							text : '删除'
 						}, {
 							xtype : 'button',
+							iconCls : 'filesave-16',
 							text : '保存'
 						} ]
 					} ],
@@ -113,15 +161,17 @@ Ext.define('System.Internationalization', {
 					style : {
 						width : '100%'
 					},
-					fieldLabel : '国际化代码',
-					labelStyle : 'margin-bottom:5px'
+					fieldLabel : '国际化代码'
 				}, {
 					xtype : 'textfield',
 					style : {
 						width : '100%'
 					},
 					fieldLabel : '国际化内容',
-					labelStyle : 'margin-bottom:5px'
+					labelStyle : 'margin-bottom:5px',
+					editor : {
+						allowBlank : false
+					}
 				}, {
 					xtype : 'combobox',
 					margin : '0 0 10 0',
@@ -140,6 +190,7 @@ Ext.define('System.Internationalization', {
 					width : 158,
 					fieldLabel : '类型',
 					labelStyle : 'margin-bottom:5px'
+
 				}, {
 					xtype : 'button',
 					width : 75,
@@ -154,6 +205,22 @@ Ext.define('System.Internationalization', {
 		});
 
 		me.callParent(arguments);
+	},
+	onAddClick : function() {
+		// Create a model instance
+		var rec = new System.model.grid.Internationalization({
+			common : 'New Plant 1',
+			light : 'Mostly Shady',
+			price : 0,
+			availDate : Ext.Date.clearTime(new Date()),
+			indoor : false
+		});
+
+		Ext.getStore("system.model.grid.Internationalization").insert(0, rec);
+		// this.cellEditing.startEditByPosition({
+		// row : 0,
+		// column : 0
+		// });
 	}
 
 });
