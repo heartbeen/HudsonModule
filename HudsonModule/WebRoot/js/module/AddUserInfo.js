@@ -189,7 +189,7 @@ Ext.define('Module.AddUserInfo', {
 				},
 				store : new Ext.data.Store({
 					fields : [ 'deptid', 'deptname', 'stepid' ],
-					autoLoad : true,
+					// autoLoad : true,
 					proxy : {
 						url : 'module/base/findLocalRegionDepartment',
 						type : 'ajax',

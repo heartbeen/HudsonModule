@@ -1,6 +1,8 @@
 package com.kc.module.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.jfinal.aop.ClearInterceptor;
@@ -128,8 +130,13 @@ public class SystemController extends Controller {
 
     }
 
-    // private void cleartRoleCache(String roldId) {
-    // CacheKit.remove("projectModule", roldId);
-    // CacheKit.remove("moduleProject", roldId);
-    // }
+    /**
+     * 
+     */
+    public void queryProjectModule() {
+
+        List<ProjectModule> moduleList = ProjectModule.dao.queryProjectModule(ControlUtils.getLang(this));
+
+        renderJson(moduleList);
+    }
 }

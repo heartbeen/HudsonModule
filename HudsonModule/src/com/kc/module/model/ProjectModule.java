@@ -51,4 +51,24 @@ public class ProjectModule extends ModelFinal<ProjectModule> {
         return Db.find(SqlManager.sql(sqlKey("findsubmodule")), mainId);
     }
 
+    /**
+     * 查询模块信息
+     * 
+     * @param localeKey
+     * @return
+     */
+    public List<ProjectModule> queryProjectModule(String localeKey) {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("select pm.id, slc.lang_value as name, pm.parentid ");
+        sql.append("  from PROJECT_MODULE pm ");
+        sql.append("  left join sys_locale_content_t slc ");
+        sql.append("    on slc.lang_code = pm.lang_code ");
+        sql.append(" where slc.locale_key = ? ");
+        sql.append(" order by pm.parentid desc ");
+
+        return find(sql.toString(), localeKey);
+
+    }
+
 }
