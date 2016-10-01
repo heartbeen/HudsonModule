@@ -100,6 +100,7 @@ import com.kc.module.model.TaskInfo;
 import com.kc.module.model.TaskStruct;
 import com.kc.module.model.TaskStuff;
 import com.kc.module.model.WorkItem;
+import com.kc.module.model.sys.SysLocaleTag;
 import com.kc.module.plugin.SqlInXmlPlugin;
 import com.kc.module.utils.ConstUtils;
 import com.kc.module.utils.DataUtils;
@@ -300,6 +301,9 @@ public class ModuleConfig extends JFinalConfig {
         arp.addMapping("DS_CRAFT_SET", DesignCraftSet.class);
         // 设计制程集合清单表
         arp.addMapping("DS_CRAFT_LIST", DesignCraftList.class);
+
+        // sys
+        arp.addMapping("sys_locale_tag_t", "lang_code", SysLocaleTag.class);
 
         // TODO 加载数据库表结构
         me.add(arp);

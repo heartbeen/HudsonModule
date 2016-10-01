@@ -4,27 +4,24 @@
 Ext.define('System.model.grid.Internationalization', {
 	extend : 'Ext.data.Model',
 	fields : [ {
-		name : 'langcode',
+		name : 'lang_code',
 		type : 'string'
 	}, {
-		name : 'projectid',
+		name : 'project_id',
 		type : 'string'
 	}, {
 		name : 'category'
 	}, {
-		name : 'createby',
+		name : 'create_by',
 		type : 'string'
 	}, {
-		name : 'createdate',
+		name : 'create_date',
 		type : 'date'
 	}, {
-		name : 'modifyby',
+		name : 'modify_by',
 		type : 'string'
 	}, {
-		name : 'modifydate',
+		name : 'modify_date',
 		type : 'date'
-	}, {
-		name : 'content',
-		type : 'object'
-	} ]
+	}]
 });

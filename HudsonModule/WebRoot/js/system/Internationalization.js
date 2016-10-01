@@ -33,23 +33,29 @@ Ext.define('System.Internationalization', {
 					plugins : [ new Ext.grid.plugin.CellEditing({
 						clicksToEdit : 1
 					}) ],
+
 					store : new Ext.data.Store({
 						storeId : 'system.model.grid.Internationalization',
-						autoDestroy : true,
+						pageSize : 25,
+						autoLoad : true,
 						model : System.model.grid.Internationalization,
 						proxy : {
+							actionMethods : {
+								read : "POST"
+							},
 							type : 'ajax',
-							url : '',
+							url : 'system/queryLocaleTag',
 							reader : {
 								type : 'json',
-								record : 'plant'
+								root : 'info',
+								totalProperty : 'totalCount'
 							}
 						}
 					}),
 					columns : [ {
 						xtype : 'gridcolumn',
 						width : 240,
-						dataIndex : 'langcode',
+						dataIndex : 'lang_code',
 						text : '国际化代码',
 						editor : {
 							allowBlank : false
@@ -57,7 +63,7 @@ Ext.define('System.Internationalization', {
 					}, {
 						xtype : 'gridcolumn',
 						text : '所属模块',
-						dataIndex : 'name',
+						dataIndex : 'project_id',
 						editor : new Ext.form.field.ComboBox({
 							// typeAhead : true,
 							// triggerAction : 'all',
@@ -85,23 +91,23 @@ Ext.define('System.Internationalization', {
 					}, {
 						xtype : 'gridcolumn',
 						width : 72,
-						dataIndex : 'createby',
+						dataIndex : 'create_by',
 						text : '创建人'
 					}, {
 						xtype : 'datecolumn',
 						width : 80,
-						dataIndex : 'createdate',
+						dataIndex : 'create_date',
 						dataIndex : 'date',
 						text : '创建日期'
 					}, {
 						xtype : 'gridcolumn',
 						width : 77,
-						dataIndex : 'modifyby',
+						dataIndex : 'modify_by',
 						text : '修改人'
 					}, {
 						xtype : 'datecolumn',
 						dataIndex : 'date',
-						dataIndex : 'modifydate',
+						dataIndex : 'modify_date',
 						text : '修改日期'
 					} ],
 					dockedItems : [ {
@@ -251,7 +257,7 @@ Ext.define('System.Internationalization', {
 		// column : 0
 		// });
 	},
-	
+
 	/**
 	 * 显示当前标签的所有语言数据
 	 */

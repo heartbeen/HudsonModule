@@ -1,5 +1,6 @@
 package com.kc.module.controller;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,11 +8,14 @@ import java.util.UUID;
 
 import com.jfinal.aop.ClearInterceptor;
 import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.kc.module.model.Authority;
+import com.kc.module.model.Factory;
 import com.kc.module.model.ProjectModule;
 import com.kc.module.model.RolePosition;
 import com.kc.module.model.SubFunction;
+import com.kc.module.model.sys.SysLocaleTag;
 import com.kc.module.utils.ControlUtils;
 
 // @Before(SystemInterceptorStack.class)
@@ -138,5 +142,27 @@ public class SystemController extends Controller {
         List<ProjectModule> moduleList = ProjectModule.dao.queryProjectModule(ControlUtils.getLang(this));
 
         renderJson(moduleList);
+    }
+
+    /**
+     * 查询厂商资料
+     * 
+     * @throws UnsupportedEncodingException
+     */
+    public void queryLocaleTag() {
+        SysLocaleTag condition = getModel(SysLocaleTag.class);
+
+        int page = getParaToInt("page");
+        int start = getParaToInt("start");
+        int limit = getParaToInt("limit");
+
+        Page<SysLocaleTag> pages = SysLocaleTag.dao.findLocaleTag(condition, page, start, limit);
+
+        setAttr("success", true);
+        setAttr("info", pages.getList());
+        setAttr("totalCount", pages.getTotalRow());
+
+        renderJson();
+
     }
 }
