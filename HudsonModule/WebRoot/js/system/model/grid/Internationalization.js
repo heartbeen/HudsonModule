@@ -10,6 +10,9 @@ Ext.define('System.model.grid.Internationalization', {
 		name : 'project_id',
 		type : 'string'
 	}, {
+		name : 'project_name',
+		type : 'string'
+	}, {
 		name : 'category'
 	}, {
 		name : 'create_by',

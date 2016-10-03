@@ -1,9 +1,7 @@
 package com.kc.module.controller;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import com.jfinal.aop.ClearInterceptor;
@@ -11,10 +9,10 @@ import com.jfinal.core.Controller;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.kc.module.model.Authority;
-import com.kc.module.model.Factory;
 import com.kc.module.model.ProjectModule;
 import com.kc.module.model.RolePosition;
 import com.kc.module.model.SubFunction;
+import com.kc.module.model.sys.SysLocaleContent;
 import com.kc.module.model.sys.SysLocaleTag;
 import com.kc.module.utils.ControlUtils;
 
@@ -150,13 +148,17 @@ public class SystemController extends Controller {
      * @throws UnsupportedEncodingException
      */
     public void queryLocaleTag() {
-        SysLocaleTag condition = getModel(SysLocaleTag.class);
+        Record condition = new Record();
+        condition.set("lang_code", getPara("lang_code"));
+        condition.set("lang_value", getPara("lang_value"));
+        condition.set("project_id", getPara("project_id"));
+        condition.set("category", getPara("category"));
 
         int page = getParaToInt("page");
         int start = getParaToInt("start");
         int limit = getParaToInt("limit");
 
-        Page<SysLocaleTag> pages = SysLocaleTag.dao.findLocaleTag(condition, page, start, limit);
+        Page<SysLocaleTag> pages = SysLocaleTag.dao.findLocaleTag(condition, ControlUtils.getLang(this), page, start, limit);
 
         setAttr("success", true);
         setAttr("info", pages.getList());
@@ -164,5 +166,12 @@ public class SystemController extends Controller {
 
         renderJson();
 
+    }
+
+    /**
+     * 通过国际化编码标签得到所有语言内容
+     */
+    public void queryLocaleContentByTag() {
+        renderJson(SysLocaleContent.dao.findLocaleContentByTag(getPara("lang_code")));
     }
 }
