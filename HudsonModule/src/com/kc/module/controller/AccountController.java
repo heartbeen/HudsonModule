@@ -5,7 +5,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -14,7 +13,6 @@ import javax.servlet.http.HttpSession;
 import com.jfinal.aop.Before;
 import com.jfinal.aop.ClearInterceptor;
 import com.jfinal.core.Controller;
-import com.jfinal.kit.StrKit;
 import com.kc.module.interceptor.validator.LoginValidator;
 import com.kc.module.model.Account;
 import com.kc.module.model.Authority;
