@@ -8,6 +8,11 @@ import com.jfinal.plugin.activerecord.Record;
 
 public class ModuleThreeMeasure extends ModelFinal<ModuleThreeMeasure> {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public static ModuleThreeMeasure dao = new ModuleThreeMeasure();
 
     /**

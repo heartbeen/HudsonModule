@@ -1,5 +1,6 @@
 package com.kc.module.model.sys;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.jfinal.plugin.activerecord.Db;
@@ -36,6 +37,38 @@ public class SysLocaleContent extends ModelFinal<SysLocaleContent> {
         sql.append(" on slc.locale_key = sl.locale_key ");
 
         return Db.find(sql.toString(), tag);
+    }
+
+    /**
+     * 
+     * @param tags
+     * @return
+     */
+    public boolean deleteLocaleContent(String[] tags) {
+        List<String> sqlList = new ArrayList<String>();
+
+        for (String tag : tags) {
+            sqlList.add("delete SYS_LOCALE_CONTENT_T where lang_code='" + tag + "'");
+        }
+
+        int[] res = Db.batch(sqlList, sqlList.size());
+
+        for (int r : res) {
+            if (r < 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 更新国际化内容的国际化编码
+     * 
+     * @return
+     */
+    public boolean upateLocaleContentCode(String newCode, String oldCode) {
+        return Db.update("update SYS_LOCALE_CONTENT_T set lang_code=? where lang_code=?", newCode, oldCode) >= 0;
     }
 
 }

@@ -10,7 +10,7 @@ Ext.define('System.model.grid.InternationalizationContent', {
 		name : 'locale_key',
 		type : 'string'
 	}, {
-		name : 'locale_code',
+		name : 'lang_code',
 		type : 'string'
 	}, {
 		name : 'locale_name',

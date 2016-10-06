@@ -13,8 +13,17 @@ Ext.define('System.Internationalization', {
 	},
 	title : '国际化',
 
+	internatlGridId : 'system.internationalization',
+
 	internatUrl : 'system/queryLocaleTag',
 	contentUrl : 'system/queryLocaleContentByTag',
+
+	saveTagUrl : "system/saveLocaleTag",
+	updateTagUrl : "system/updateLocaleTag",
+	deleteTagUrl : "system/deleteLocaleTag",
+
+	saveContentUrl : 'system/saveLocaleContent',
+	updateContentUrl : 'system/updateLocaleContent',
 
 	internalStroeId : 'system.model.grid.Internationalization',
 	contentStoreId : 'system.model.grid.InternationalizationContent',
@@ -40,6 +49,52 @@ Ext.define('System.Internationalization', {
 					root : 'info',
 					totalProperty : 'totalCount'
 				}
+			},
+
+			listeners : {
+				load : function() {
+					me.clearLocaleContent();
+				}
+			}
+		});
+
+		/**
+		 * 国际化编码编辑
+		 */
+		me.rowEditPlugin = Ext.create('Ext.grid.plugin.RowEditing', {
+			clicksToMoveEditor : 1,
+			saveBtnText : "保存",
+			cancelBtnText : "取消",
+			listeners : {
+				validateEdit : function() {
+					var e = this;
+					me.updateLocaleContent(e.context.record, e.editor.items.items);
+
+					return true;
+				}
+			}
+		});
+
+		/**
+		 * 国际化内容编辑
+		 */
+		me.contentEditPlugin = Ext.create('Ext.grid.plugin.RowEditing', {
+			clicksToEdit : 1,
+			saveBtnText : "保存",
+			cancelBtnText : "取消",
+			listeners : {
+				edit : function(editor, context, eOpts) {
+				},
+
+				canceledit : function(editor, context, eOpts) {
+				},
+
+				validateEdit : function() {
+					var e = this;
+					me.localeContentChange(e.context.record, e.editor.items.items);
+
+					return true;
+				}
 			}
 		});
 
@@ -53,13 +108,16 @@ Ext.define('System.Internationalization', {
 				},
 				items : [ {
 					xtype : 'gridpanel',
+					id : me.internatlGridId,
 					flex : 3,
 					margins : '0 0 5 0',
 					region : 'north',
 					title : '国际化代码列表',
-					plugins : [ new Ext.grid.plugin.CellEditing({
-						clicksToEdit : 2
-					}) ],
+					plugins : [/*
+								 * new Ext.grid.plugin.CellEditing({
+								 * clicksToEdit : 2 })
+								 */
+					me.rowEditPlugin ],
 
 					store : me.localeTagStore,
 					columns : [ {
@@ -67,21 +125,35 @@ Ext.define('System.Internationalization', {
 						width : 240,
 						dataIndex : 'lang_code',
 						text : '国际化代码',
-						editor : {
-							allowBlank : false
+						field : {
+							xtype : 'textfield',
+							allowBlank : false,
+							maxLength : 200,
+							regex : /^[a-zA-z.]+$/
 						}
 					}, {
 						xtype : 'gridcolumn',
 						text : '所属模块',
 						width : 200,
 						dataIndex : 'project_name',
-						editor : new Ext.form.field.ComboBox({
-							editable : false,
-							displayField : 'name',
+						field : {
+							xtype : 'combobox',
+							allowBlank : false,
 							valueField : 'id',
-							// queryMode : 'local',
-							store : {
-								fields : [ 'name', 'id', 'parentid' ],
+							displayField : 'project_name',
+							queryMode : 'remote',
+							editable : false,
+							store : Ext.create('Ext.data.Store', {
+								fields : [ {
+									type : 'string',
+									name : 'id'
+								}, {
+									type : 'string',
+									name : 'project_name'
+								}, {
+									type : 'string',
+									name : 'parentid'
+								} ],
 								proxy : {
 									type : 'ajax',
 									url : 'system/queryProjectModule',
@@ -89,35 +161,46 @@ Ext.define('System.Internationalization', {
 										type : 'json'
 									}
 								}
-							}
-						})
-					}, {
+							})
+						}
+
+					/*
+					 * editor : new Ext.form.field.ComboBox({ editable : false,
+					 * displayField : 'name', valueField : 'id', // queryMode :
+					 * 'local', store : { fields : [ 'name', 'id', 'parentid' ],
+					 * proxy : { type : 'ajax', url :
+					 * 'system/queryProjectModule', reader : { type : 'json' } } } })
+					 */
+					},
+
+					/*
+					 * { xtype : 'gridcolumn', text : '类型', dataIndex :
+					 * 'category', editor : new Ext.form.field.ComboBox({
+					 * editable : false, store : [ [ 'user', '用户' ], [ 'sys',
+					 * '系统' ] ] }) },
+					 */
+					{
 						xtype : 'gridcolumn',
-						text : '类型',
-						dataIndex : 'category',
-						editor : new Ext.form.field.ComboBox({
-							editable : false,
-							store : [ [ 'user', '用户' ], [ 'sys', '系统' ] ]
-						})
-					}, {
-						xtype : 'gridcolumn',
-						width : 72,
+						width : 60,
 						dataIndex : 'create_by',
 						text : '创建人'
 					}, {
 						xtype : 'datecolumn',
-						width : 80,
+						width : 110,
 						dataIndex : 'create_date',
-						text : '创建日期'
+						text : '创建日期',
+						format : 'Y-m-d H:i'
 					}, {
 						xtype : 'gridcolumn',
-						width : 77,
+						width : 60,
 						dataIndex : 'modify_by',
 						text : '修改人'
 					}, {
 						xtype : 'datecolumn',
 						dataIndex : 'modify_date',
-						text : '修改日期'
+						width : 110,
+						text : '修改日期',
+						format : 'Y-m-d H:i'
 					} ],
 
 					dockedItems : [ {
@@ -138,11 +221,18 @@ Ext.define('System.Internationalization', {
 						}, '-', {
 							xtype : 'button',
 							iconCls : 'edit-delete-16',
-							text : '删除'
-						}, '-', {
+							text : '删除',
+							scope : this,
+							handler : this.onDeleteClick
+
+						}, '->', {
 							xtype : 'button',
 							iconCls : 'filesave-16',
-							text : '保存'
+							text : '导入'
+						}, "-", {
+							xtype : 'button',
+							iconCls : 'filesave-16',
+							text : '导出'
 						} ]
 					} ],
 					selModel : Ext.create('Ext.selection.CheckboxModel', {
@@ -172,27 +262,34 @@ Ext.define('System.Internationalization', {
 						}
 					}, {
 						xtype : 'gridcolumn',
-						width : 72,
+						width : 60,
 						dataIndex : 'create_by',
 						text : '创建人'
 					}, {
 						xtype : 'datecolumn',
-						width : 80,
+						width : 110,
 						dataIndex : 'create_date',
-						text : '创建日期'
+						text : '创建日期',
+						format : 'Y-m-d H:i'
 					}, {
 						xtype : 'gridcolumn',
-						width : 77,
+						width : 60,
 						dataIndex : 'modify_by',
 						text : '修改人'
 					}, {
 						xtype : 'datecolumn',
 						dataIndex : 'modify_date',
-						text : '修改日期'
+						text : '修改日期',
+						width : 110,
+						format : 'Y-m-d H:i'
 					} ],
-					plugins : [ new Ext.grid.plugin.CellEditing({
-						clicksToEdit : 1
-					}) ],
+
+					plugins : [ me.contentEditPlugin
+					/*
+					 * new Ext.grid.plugin.CellEditing({ clicksToEdit : 1 })
+					 */
+					],
+
 					store : new Ext.data.Store({
 						autoLoad : false,
 						storeId : me.contentStoreId,
@@ -241,7 +338,8 @@ Ext.define('System.Internationalization', {
 					fieldLabel : '国际化内容',
 					labelStyle : 'margin-bottom:5px',
 					editor : {
-						allowBlank : false
+						allowBlank : false,
+						maxLength : 300
 					}
 				}, {
 					xtype : 'combobox',
@@ -253,11 +351,11 @@ Ext.define('System.Internationalization', {
 					name : 'project_id',
 					fieldLabel : '所属模块',
 					labelStyle : 'margin-bottom:5px',
-					displayField : 'name',
+					displayField : 'project_name',
 					editable : false,
 					valueField : 'id',
 					store : {
-						fields : [ 'name', 'id', 'parentid' ],
+						fields : [ 'project_name', 'id', 'parentid' ],
 						proxy : {
 							type : 'ajax',
 							url : 'system/queryProjectModule',
@@ -266,20 +364,14 @@ Ext.define('System.Internationalization', {
 							}
 						}
 					}
-				}, {
-					xtype : 'combobox',
-					margin : '0 0 10 0',
-					name : 'category',
-					style : {
-						width : '100%'
-					},
-					width : 158,
-					editable : false,
-					fieldLabel : '类型',
-					labelStyle : 'margin-bottom:5px',
-					store : [ [ 'user', '用户' ], [ 'sys', '系统' ] ]
-
-				}, {
+				},
+				/*
+				 * { xtype : 'combobox', margin : '0 0 10 0', name : 'category',
+				 * style : { width : '100%' }, width : 158, editable : false,
+				 * fieldLabel : '类型', labelStyle : 'margin-bottom:5px', store : [ [
+				 * 'user', '用户' ], [ 'sys', '系统' ] ] },
+				 */
+				{
 					xtype : 'button',
 					width : 75,
 					text : '查找',
@@ -299,18 +391,103 @@ Ext.define('System.Internationalization', {
 		me.callParent(arguments);
 	},
 
+	clearLocaleContent : function() {
+		Ext.getStore(this.contentStoreId).loadData([]);
+	},
+
 	/**
 	 * 增加国际化
 	 */
 	onAddClick : function() {
-		// Create a model instance
-		var rec = new System.model.grid.Internationalization();
+		var me = this;
 
-		Ext.getStore(this.internalStroeId).insert(0, rec);
-		// this.cellEditing.startEditByPosition({
-		// row : 0,
-		// column : 0
-		// });
+		var rec = Ext.create("System.model.grid.Internationalization", {
+			lang_code : 'example',
+			project_id : '1',
+			project_name : ' ',
+			isNew : true
+		});
+
+		me.rowEditPlugin.cancelEdit();
+
+		Ext.getStore(me.internalStroeId).insert(0, rec);
+		me.rowEditPlugin.startEdit(0, 0);
+
+		me.clearLocaleContent();
+	},
+
+	/**
+	 * 
+	 */
+	onDeleteClick : function() {
+		var me = this;
+		var tagStore = Ext.getStore(me.localeTagStore);
+
+		var records = Ext.getCmp(me.internatlGridId).getSelectionModel().getSelection();
+
+		if (records.length == 0) {
+			showInfo('请选择要删除的国际化编码');
+			return;
+		}
+
+		var codes = [];
+		var newTagRecord = [];
+
+		records.forEach(function(record) {
+			if (record.data.isNew) {
+				newTagRecord.push(record);
+			} else {
+				codes.push(record.data.lang_code);
+			}
+
+		});
+
+		Ext.MessageBox.show({
+			title : '删除国际化编码',
+			msg : '确定删除国际化编码吗？',
+			buttons : Ext.MessageBox.YESNO,
+			fn : function(buttonId) {
+				if (buttonId == 'yes') {
+
+					tagStore.remove(newTagRecord);
+
+					// 如果只是删除的新建的，就不发送请求
+					if (newTagRecord.length > 0 && codes.length === 0) {
+						showSuccess("删除国际化编码成功！");
+					}
+
+					if (codes.length === 0) {
+						return;
+					}
+
+					Ext.Ajax.request({
+						url : me.deleteTagUrl,
+						params : {
+							tags : codes.join(",")
+						},
+						success : function(response) {
+							var res = JSON.parse(response.responseText);
+
+							App.InterPath(res, function() {
+								if (res.success) {
+									showSuccess(res.msg);
+									tagStore.remove(records);
+								} else {
+									showError(res.msg);
+								}
+							});
+
+							me.clearLocaleContent();
+						},
+						failure : function(response) {
+							showError("服务内部错误!");
+							me.clearLocaleContent();
+						}
+					});
+				}
+			}
+		});
+
 	},
 
 	/**
@@ -320,7 +497,7 @@ Ext.define('System.Internationalization', {
 		var me = this;
 
 		if (grid.getSelectionModel().getSelection().length > 1) {
-			Ext.getStore(me.contentStoreId).loadData([]);
+			me.clearLocaleContent();
 
 			return;
 		}
@@ -345,7 +522,6 @@ Ext.define('System.Internationalization', {
 			params : Ext.getCmp(me.queryFormId).getForm().getValues()
 		});
 
-		Ext.getStore(me.contentStoreId).loadData([]);
 	},
 
 	/**
@@ -355,6 +531,145 @@ Ext.define('System.Internationalization', {
 		Ext.getCmp(this.queryFormId).getForm().reset();
 
 		this.onQueryLang();
+	},
+
+	/**
+	 * 新建或更新国际化编码
+	 */
+	updateLocaleContent : function(record, editors) {
+		var me = this;
+
+		/*
+		 * if (editors[1].lastValue == record.data.lang_code &&
+		 * (editors[2].lastValue == record.data.project_id ||
+		 * editors[2].lastValue == editors[2].originalValue)) {
+		 * showInfo("国际化信息没有发生改变！"); return; }
+		 */
+		var oldRecord = {
+			lang_code : record.data.lang_code,
+			project_id : record.data.project_id,
+			project_name : record.data.project_name,
+		};
+
+		// 模块没有改变时
+		var isNewProjectId = editors[2].lastValue == record.data.project_id || editors[2].lastValue == editors[2].originalValue;
+
+		var params = {
+			"new_code" : editors[1].lastValue,
+			"tag.lang_code" : record.data.isNew ? null : record.data.lang_code,
+			"tag.project_id" : isNewProjectId ? (record.data.project_id || editors[2].lastValue) : editors[2].lastValue
+		};
+
+		if (!params["tag.project_id"]) {
+			showError("请选择模块");
+			return;
+		}
+
+		Ext.MessageBox.show({
+			title : '保存国际化编码',
+			msg : '确定保存国际化编码吗？',
+			buttons : Ext.MessageBox.YESNO,
+			fn : function(buttonId) {
+				if (buttonId == 'yes') {
+					Ext.Ajax.request({
+						url : record.data.isNew ? me.saveTagUrl : me.updateTagUrl,
+						params : params,
+						success : function(response) {
+							var res = JSON.parse(response.responseText);
+
+							App.InterPath(res, function() {
+								if (res.success) {
+									var tag = res.tag;
+
+									showSuccess(res.msg);
+									record.set("lang_code", editors[1].getValue());
+									record.set("project_id", tag.project_id);
+									record.set("project_name", editors[2].rawValue);
+
+									if (record.data.isNew) {
+										record.set("create_by", tag.create_by);
+										record.set("create_date", tag.create_date);
+										record.set("isNew", false);
+									}
+									record.set("modify_by", tag.modify_by);
+									record.set("modify_date", tag.modify_date);
+								} else {
+									record.set("lang_code", oldRecord.lang_code);
+									record.set("project_id", oldRecord.project_id);
+									record.set("project_name", oldRecord.project_name);
+								}
+
+								record.commit();
+							});
+						},
+						failure : function(response) {
+							showError("服务内部错误!");
+						}
+					});
+				} else {
+					record.set("lang_code", oldRecord.lang_code);
+					record.set("project_id", oldRecord.project_id);
+					record.set("project_name", oldRecord.project_name);
+					record.commit();
+				}
+			}
+		});
+
+	},
+
+	/**
+	 * 
+	 */
+	localeContentChange : function(record, editors) {
+		var me = this;
+		// if (editors[1].lastValue == record.data.lang_value) {
+		// showInfo("国际化内容没有发生改变！");
+		// return;
+		// }
+
+		var params = {
+			"content.id" : record.data.id,
+			"content.locale_key" : record.data.locale_key,
+			"content.lang_code" : record.data.lang_code,
+			"content.lang_value" : editors[1].lastValue
+		};
+
+		Ext.MessageBox.show({
+			title : '保存国际化内容',
+			msg : '确定更新国际化内容吗？',
+			buttons : Ext.MessageBox.YESNO,
+			fn : function(buttonId) {
+				if (buttonId == 'yes') {
+					Ext.Ajax.request({
+						url : record.data.id ? me.updateContentUrl : me.saveContentUrl,
+						params : params,
+						success : function(response) {
+							var res = JSON.parse(response.responseText);
+
+							App.InterPath(res, function() {
+								if (res.success) {
+									var content = res.content;
+
+									showSuccess(res.msg);
+									record.set("lang_value", editors[1].getValue());
+									record.set("modify_by", content.modify_by);
+									record.set("modify_date", content.modify_date);
+
+									record.commit();
+								} else {
+									showError(res.msg);
+									record.cancelEdit();
+								}
+							});
+						},
+						failure : function(response) {
+							showError("服务内部错误!");
+						}
+					});
+				}
+			}
+		});
+
 	}
 
 });

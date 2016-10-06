@@ -60,7 +60,7 @@ public class ProjectModule extends ModelFinal<ProjectModule> {
     public List<ProjectModule> queryProjectModule(String localeKey) {
         StringBuilder sql = new StringBuilder();
 
-        sql.append("select pm.id, slc.lang_value as name, pm.parentid ");
+        sql.append("select pm.id, slc.lang_value as project_name, pm.parentid ");
         sql.append("  from PROJECT_MODULE pm ");
         sql.append("  left join sys_locale_content_t slc ");
         sql.append("    on slc.lang_code = pm.lang_code ");

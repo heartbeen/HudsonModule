@@ -2,8 +2,9 @@
 <sqlGroup name="projectmodule">
 	<!-- 得到用户所对应的模块 -->
 	<sql id="findModule" database="oracledialect">
-		select loc.lang_value as name, pm.*
+		select nvl(loc.lang_value,pm.project_name) as name, pm.*
 		  from (SELECT lang_code,
+		               name as project_name,
 		               ICONCLS,
 		               MODULEDEFINE,
 		               MAINPANEL || ';' || ID || ';' || TABPANEL AS MODULE,

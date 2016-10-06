@@ -13,8 +13,6 @@ Ext.define('System.model.grid.Internationalization', {
 		name : 'project_name',
 		type : 'string'
 	}, {
-		name : 'category'
-	}, {
 		name : 'create_by',
 		type : 'string'
 	}, {
@@ -26,5 +24,8 @@ Ext.define('System.model.grid.Internationalization', {
 	}, {
 		name : 'modify_date',
 		type : 'date'
-	}]
+	}, {
+		name : 'isNew',
+		type : 'bool'
+	} ]
 });
