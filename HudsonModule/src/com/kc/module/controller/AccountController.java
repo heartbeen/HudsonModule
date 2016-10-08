@@ -31,7 +31,7 @@ public class AccountController extends Controller {
      * @throws IOException
      */
     public void index() throws ServletException, IOException {
-        String lang = ControlUtils.getLang(this);
+        String lang = ControlUtils.getLocale(this);
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
@@ -92,7 +92,7 @@ public class AccountController extends Controller {
                             setAttr("newauth", userData.get("NEWAUTH"));// 表示用户有新的授权,此值会记录到用户前台中
                         }
 
-                        roleProcess(userData.getStr("ROLEID"), ControlUtils.getLang(this));
+                        roleProcess(userData.getStr("ROLEID"), ControlUtils.getLocale(this));
                     }
 
                     setAttr("success", true);
