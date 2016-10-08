@@ -106,6 +106,7 @@ import com.kc.module.model.sys.SysLocaleTag;
 import com.kc.module.plugin.SqlInXmlPlugin;
 import com.kc.module.utils.ConstUtils;
 import com.kc.module.utils.DataUtils;
+import com.kc.module.utils.I18n;
 
 public class ModuleConfig extends JFinalConfig {
 
@@ -126,6 +127,9 @@ public class ModuleConfig extends JFinalConfig {
         if (isOracle) {
             ConstUtils.initConst();
         }
+
+        // 启动时初化国际化数据
+        I18n.cacheLocaleContent();
     }
 
     /**
@@ -150,7 +154,9 @@ public class ModuleConfig extends JFinalConfig {
             throw new RuntimeException("数据库配置文件出错");
         }
 
-        DruidPlugin dp = new DruidPlugin(properties.getProperty("jdbcUrl"), properties.getProperty("user"), properties.getProperty("password"));
+        DruidPlugin dp = new DruidPlugin(properties.getProperty("jdbcUrl"),
+                                         properties.getProperty("user"),
+                                         properties.getProperty("password"));
 
         ActiveRecordPlugin arp = new ActiveRecordPlugin(dp);
 
