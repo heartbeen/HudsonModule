@@ -142,7 +142,7 @@ public class SystemController extends Controller {
      */
     public void queryProjectModule() {
 
-        List<ProjectModule> moduleList = ProjectModule.dao.queryProjectModule(ControlUtils.getLang(this));
+        List<ProjectModule> moduleList = ProjectModule.dao.queryProjectModule(ControlUtils.getLocale(this));
 
         renderJson(moduleList);
     }
@@ -163,7 +163,11 @@ public class SystemController extends Controller {
         int start = getParaToInt("start");
         int limit = getParaToInt("limit");
 
-        Page<SysLocaleTag> pages = SysLocaleTag.dao.findLocaleTag(condition, ControlUtils.getLang(this), page, start, limit);
+        Page<SysLocaleTag> pages = SysLocaleTag.dao.findLocaleTag(condition,
+                                                                  ControlUtils.getLocale(this),
+                                                                  page,
+                                                                  start,
+                                                                  limit);
 
         setAttr("success", true);
         setAttr("info", pages.getList());
@@ -197,7 +201,8 @@ public class SystemController extends Controller {
             boolean success = tag.save();
 
             setAttr("success", success);
-            setAttr("msg", tag.get("lang_code") + (success ? "<br>新建国际化编码成功！" : "<br>新建国际化编码失败,请重试！"));
+            setAttr("msg", tag.get("lang_code")
+                           + (success ? "<br>新建国际化编码成功！" : "<br>新建国际化编码失败,请重试！"));
 
             if (success) {
                 setAttr("tag", tag);
@@ -231,7 +236,9 @@ public class SystemController extends Controller {
 
                     if (!newCode.equals(tag.get("lang_code"))) {
                         success = success && tag.updateLocaleTag(newCode);
-                        success = success && SysLocaleContent.dao.upateLocaleContentCode(newCode, tag.getStr("lang_code"));
+                        success = success
+                                  && SysLocaleContent.dao.upateLocaleContentCode(newCode,
+                                                                                 tag.getStr("lang_code"));
                     }
 
                     return success;
@@ -265,7 +272,8 @@ public class SystemController extends Controller {
 
                     String[] localeTags = tags.split(",");
 
-                    return SysLocaleTag.dao.deleteLocaleTag(localeTags) && SysLocaleContent.dao.deleteLocaleContent(localeTags);
+                    return SysLocaleTag.dao.deleteLocaleTag(localeTags)
+                           && SysLocaleContent.dao.deleteLocaleContent(localeTags);
                 }
             });
 
@@ -325,4 +333,5 @@ public class SystemController extends Controller {
 
         renderJson();
     }
+
 }
