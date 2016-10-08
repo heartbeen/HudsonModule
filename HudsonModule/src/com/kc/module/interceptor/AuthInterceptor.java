@@ -33,7 +33,8 @@ public class AuthInterceptor implements Interceptor {
         Map<String, String> authMap = controller.getSessionAttr(ConstUtils.USER_AUTH_PATH);
 
         if (authMap != null) {
-            if (isOvert(this.getAssembly(), ai.getActionKey()) || StrKit.notBlank(authMap.get(ai.getMethodName()))) {
+            if (isOvert(this.getAssembly(), ai.getActionKey())
+                || StrKit.notBlank(authMap.get(ai.getMethodName()))) {
 
                 // ModuleActionExtract mae = new ModuleActionExtract();
                 // mae.setController(ai.getController());
@@ -44,8 +45,15 @@ public class AuthInterceptor implements Interceptor {
 
                 ai.invoke();
             } else {
-                controller.setAttr("auth", true).setAttr("success", false).setAttr("login", true).setAttr("msg", "您无此权限,如要开通请告知管理员!").renderJson();
+                controller.setAttr("auth", true)
+                          .setAttr("success", false)
+                          .setAttr("login", true)
+                          .setAttr("msg", "您无此权限,如要开通请告知管理员!")
+                          .renderJson();
             }
+        } else if ("/public/getLocaleContent".equals(ai.getActionKey())) {
+            // 读取国际化内容无需登入
+            ai.invoke();
         } else {
             controller.setAttr("msg", "您长时间没有操作,?秒后转到登录页面,请重新登陆!")
                       .setAttr("login", false)
