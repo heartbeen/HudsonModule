@@ -68,7 +68,19 @@ public class SysLocaleContent extends ModelFinal<SysLocaleContent> {
      * @return
      */
     public boolean upateLocaleContentCode(String newCode, String oldCode) {
-        return Db.update("update SYS_LOCALE_CONTENT_T set lang_code=? where lang_code=?", newCode, oldCode) >= 0;
+        return Db.update("update SYS_LOCALE_CONTENT_T set lang_code=? where lang_code=?",
+                         newCode,
+                         oldCode) >= 0;
+    }
+
+    /**
+     * 缓存国际化
+     * 
+     * @param locale
+     * @return
+     */
+    public List<SysLocaleContent> cacheLocaleContent() {
+        return find("select locale_key,lang_code, lang_value from sys_locale_content_t");
     }
 
 }

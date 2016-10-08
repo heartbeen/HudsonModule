@@ -25,7 +25,11 @@ public class SysLocaleTag extends ModelFinal<SysLocaleTag> {
      * @param condition
      * @return
      */
-    public Page<SysLocaleTag> findLocaleTag(Record tag, String locale, int page, int start, int limit) {
+    public Page<SysLocaleTag> findLocaleTag(Record tag,
+                                            String locale,
+                                            int page,
+                                            int start,
+                                            int limit) {
         StringBuilder sqlExceptSelect = new StringBuilder();
 
         String sql = "select locale.*, pm.project_name ";
@@ -42,16 +46,22 @@ public class SysLocaleTag extends ModelFinal<SysLocaleTag> {
             }
 
             if (!StringUtils.isEmpty(tag.get("lang_code"))) {
-                sqlExceptSelect.append(" and lower(slc.lang_code) like '%").append(tag.getStr("lang_code").trim().toLowerCase()).append("%'");
+                sqlExceptSelect.append(" and lower(slc.lang_code) like '%")
+                               .append(tag.getStr("lang_code").trim().toLowerCase())
+                               .append("%'");
 
             }
 
             if (!StringUtils.isEmpty(tag.get("lang_value"))) {
-                sqlExceptSelect.append(" and lower(slc.lang_value) like '%").append(tag.getStr("lang_value").trim().toLowerCase()).append("%'");
+                sqlExceptSelect.append(" and lower(slc.lang_value) like '%")
+                               .append(tag.getStr("lang_value").trim().toLowerCase())
+                               .append("%'");
             }
 
             if (!StringUtils.isEmpty(tag.get("category"))) {
-                sqlExceptSelect.append(" and slt.category='").append(tag.get("category")).append("'");
+                sqlExceptSelect.append(" and slt.category='")
+                               .append(tag.get("category"))
+                               .append("'");
             }
         }
 
@@ -87,6 +97,8 @@ public class SysLocaleTag extends ModelFinal<SysLocaleTag> {
      * @return
      */
     public boolean updateLocaleTag(String newCode) {
-        return Db.update("update SYS_LOCALE_TAG_T set lang_code=? where lang_code = ?", newCode, get("lang_code")) > 0;
+        return Db.update("update SYS_LOCALE_TAG_T set lang_code=? where lang_code = ?",
+                         newCode,
+                         get("lang_code")) > 0;
     }
 }

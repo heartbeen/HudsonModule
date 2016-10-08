@@ -18,7 +18,7 @@ public class MainProjectExtract extends ExtractDao {
         String projectId = this.getController().getPara("projectId");
 
         StringBuilder json = new StringBuilder();
-        List<ProjectModule> list = ProjectModule.dao.findProjectFunction(roleId, projectId, 0, ControlUtils.getLang(this.getController()));
+        List<ProjectModule> list = ProjectModule.dao.findProjectFunction(roleId, projectId, 0, ControlUtils.getLocale(this.getController()));
 
         Map<String, List<ProjectModule>> map = DataUtils.moduleClassific(list, "name");
 
