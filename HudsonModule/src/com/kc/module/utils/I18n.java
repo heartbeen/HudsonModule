@@ -76,13 +76,30 @@ public class I18n {
     }
 
     /**
-     * 增加国际化内容
+     * 增加或更新国际化内容
      * 
-     * @param control
+     * @param locale
      * @param key
      * @param value
      */
-    public static void put(Controller control, String key, String value) {
-        i18n.get(ControlUtils.getLocale(control)).put(key, value);
+    public static void put(String locale, String key, String value) {
+        i18n.get(locale).put(key, value);
+    }
+
+    /**
+     * 更新国际化编码
+     * 
+     * @param control
+     * @param oldKey
+     * @param newKey
+     */
+    public static synchronized void update(String oldKey, String newKey) {
+
+        for (Entry<String, Map<String, String>> entry : i18n.entrySet()) {
+            String value = i18n.get(entry.getKey()).get(oldKey);
+            i18n.get(entry.getKey()).put(newKey, value);
+            i18n.get(entry.getKey()).remove(oldKey);
+        }
+
     }
 }
