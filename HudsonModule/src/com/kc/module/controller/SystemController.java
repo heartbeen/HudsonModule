@@ -20,6 +20,7 @@ import com.kc.module.model.SubFunction;
 import com.kc.module.model.sys.SysLocaleContent;
 import com.kc.module.model.sys.SysLocaleTag;
 import com.kc.module.utils.ControlUtils;
+import com.kc.module.utils.I18n;
 
 // @Before(SystemInterceptorStack.class)
 @ClearInterceptor
@@ -220,6 +221,7 @@ public class SystemController extends Controller {
      * 更新国际化编码
      */
     public void updateLocaleTag() {
+        final Controller control = this;
         final String accountName = ControlUtils.getAccountName(this);
         final SysLocaleTag tag = getModel(SysLocaleTag.class, "tag");
         final String newCode = getPara("new_code");
@@ -239,6 +241,11 @@ public class SystemController extends Controller {
                         success = success
                                   && SysLocaleContent.dao.upateLocaleContentCode(newCode,
                                                                                  tag.getStr("lang_code"));
+
+                        if (success) {
+                            I18n.update(tag.getStr("lang_code"), newCode);
+                        }
+
                     }
 
                     return success;
@@ -295,6 +302,7 @@ public class SystemController extends Controller {
 
         SysLocaleContent content = getModel(SysLocaleContent.class, "content");
 
+        content.set("id", "SYS_LOCALE_CONTENT_S.nextval");
         content.set("create_by", ControlUtils.getAccountName(this));
         content.set("create_date", new Timestamp(new Date().getTime()));
         content.set("modify_by", ControlUtils.getAccountName(this));
@@ -307,6 +315,9 @@ public class SystemController extends Controller {
 
         if (success) {
             setAttr("content", content);
+            I18n.put(content.getStr("locale_key"),
+                     content.getStr("lang_code"),
+                     content.getStr("lang_value"));
         }
 
         renderJson();
@@ -329,6 +340,9 @@ public class SystemController extends Controller {
 
         if (success) {
             setAttr("content", content);
+            I18n.put(content.getStr("locale_key"),
+                     content.getStr("lang_code"),
+                     content.getStr("lang_value"));
         }
 
         renderJson();

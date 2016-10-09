@@ -246,7 +246,7 @@ Ext.define('System.Internationalization', {
 					xtype : 'gridpanel',
 					flex : 2,
 					region : 'center',
-					title : '详细数据',
+					title : i18n.get('system.systemparam.locale.content.data.table'),
 					columns : [ {
 						xtype : 'gridcolumn',
 						width : 100,
@@ -303,6 +303,24 @@ Ext.define('System.Internationalization', {
 							reader : {
 								type : 'json'
 							}
+						},
+
+						listeners : {
+							load : function(store, records, successful) {
+								if (successful) {
+									var langCode = Ext.getCmp(me.internatlGridId).getSelectionModel().getSelection()[0];
+									records.forEach(function(record) {
+										if (!record.data.id) {
+											// 行编辑时，编辑的列要有一个值才能进行保存操作
+											record.set("lang_code", langCode.data.lang_code);
+											record.set("isNew", true);
+											record.set("lang_value", " ");
+											record.commit();
+										}
+									});
+
+								}
+							}
 						}
 					})
 				} ]
@@ -316,7 +334,7 @@ Ext.define('System.Internationalization', {
 				bodyPadding : 10,
 				collapsed : false,
 				collapsible : true,
-				title : '查询',
+				title : i18n.get('system.systemparam.title.locale.query'),
 				fieldDefaults : {
 					labelAlign : 'top',
 					labelWidth : 100
@@ -403,7 +421,7 @@ Ext.define('System.Internationalization', {
 
 		var rec = Ext.create("System.model.grid.Internationalization", {
 			lang_code : 'example',
-			project_id : '1',
+			project_id : -1,
 			project_name : ' ',
 			isNew : true
 		});
@@ -560,6 +578,16 @@ Ext.define('System.Internationalization', {
 			"tag.project_id" : isNewProjectId ? (record.data.project_id || editors[2].lastValue) : editors[2].lastValue
 		};
 
+		if (!/^[a-zA-z.]{1,200}$/.test(params["tag.lang_code"]) || !/^[a-zA-z.]{1,200}$/.test(params["new_code"])) {
+			showError("国际化编码只能为字母和小数点,并且长度不超过200");
+			return;
+		}
+
+		if (params["tag.project_id"] == "-1") {
+			showError("请选择国际化所属模块");
+			return;
+		}
+
 		if (!params["tag.project_id"]) {
 			showError("请选择模块");
 			return;
@@ -631,12 +659,17 @@ Ext.define('System.Internationalization', {
 			"content.id" : record.data.id,
 			"content.locale_key" : record.data.locale_key,
 			"content.lang_code" : record.data.lang_code,
-			"content.lang_value" : editors[1].lastValue
+			"content.lang_value" : editors[1].lastValue.trim()
 		};
+
+		if (params["content.lang_value"].length == 0 || params["content.lang_value"].length > 300) {
+			showError("国际化内容的长度不为0,并且不超过300！");
+			return;
+		}
 
 		Ext.MessageBox.show({
 			title : '保存国际化内容',
-			msg : '确定更新国际化内容吗？',
+			msg : '确定保存国际化内容吗？',
 			buttons : Ext.MessageBox.YESNO,
 			fn : function(buttonId) {
 				if (buttonId == 'yes') {
@@ -654,6 +687,13 @@ Ext.define('System.Internationalization', {
 									record.set("lang_value", editors[1].getValue());
 									record.set("modify_by", content.modify_by);
 									record.set("modify_date", content.modify_date);
+									record.set("id", content.id);
+
+									if (record.data.isNew) {
+										record.set("create_by", content.create_by);
+										record.set("create_date", content.create_date);
+										record.set("isNew", false);
+									}
 
 									record.commit();
 								} else {

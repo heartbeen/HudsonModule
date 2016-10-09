@@ -30,5 +30,8 @@ Ext.define('System.model.grid.InternationalizationContent', {
 	}, {
 		name : 'id',
 		type : 'int'
+	}, {
+		name : 'isNew',
+		type : 'bool'
 	} ]
 });
