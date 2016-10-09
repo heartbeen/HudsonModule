@@ -29,12 +29,13 @@ public class SysLocaleContent extends ModelFinal<SysLocaleContent> {
     public List<Record> findLocaleContentByTag(String tag) {
         StringBuilder sql = new StringBuilder();
 
-        sql.append("select sl.locale_name, slc.* ");
+        sql.append("select sl.locale_name,sl.locale_key, slc.id,slc.lang_code,slc.lang_value,");
+        sql.append("slc.create_by,slc.create_date,slc.modify_by,slc.modify_date ");
         sql.append("from sys_locale sl ");
         sql.append("left join (select * ");
         sql.append("             from SYS_LOCALE_CONTENT_T ");
         sql.append("            where lang_code = ?) slc ");
-        sql.append(" on slc.locale_key = sl.locale_key ");
+        sql.append(" on slc.locale_key = sl.locale_key order by sl.locale_key");
 
         return Db.find(sql.toString(), tag);
     }
