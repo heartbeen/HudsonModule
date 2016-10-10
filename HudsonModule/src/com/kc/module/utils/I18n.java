@@ -42,6 +42,14 @@ public class I18n {
 
     }
 
+    /**
+     * 得国际化内容
+     * 
+     * @param control
+     * @param localeKey
+     * @param params
+     * @return
+     */
     public static String get(Controller control, String localeKey, Object... params) {
         String locale = ControlUtils.getLocale(control);
 

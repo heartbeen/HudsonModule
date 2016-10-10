@@ -285,7 +285,11 @@ public class SystemController extends Controller {
             });
 
             setAttr("success", success);
-            setAttr("msg", success ? "删除国际化编码成功！" : "删除国际化编码失败！");
+            // "删除国际化编码成功！"
+            // "删除国际化编码失败！"
+            setAttr("msg",
+                    success ? I18n.get(this, "system.systemparams.msg.locale.delete.success")
+                           : I18n.get(this, "system.systemparams.msg.locale.delete.fail"));
 
         } else {
             setAttr("success", true);
