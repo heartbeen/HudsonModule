@@ -34,35 +34,35 @@ public class SysLocaleTag extends ModelFinal<SysLocaleTag> {
 
         String sql = "select locale.*, pm.project_name ";
 
-        sqlExceptSelect.append("from (select slt.* from SYS_LOCALE_TAG_T slt left join SYS_LOCALE_CONTENT_T slc ");
-        sqlExceptSelect.append("on slc.lang_code=slt.lang_code where (slc.locale_key='");
-        sqlExceptSelect.append(locale);
-        sqlExceptSelect.append("' or slc.locale_key is null) ");
+        sqlExceptSelect.append("from (select distinct slt.* from SYS_LOCALE_TAG_T slt left join SYS_LOCALE_CONTENT_T slc ");
+        sqlExceptSelect.append("on slc.lang_code=slt.lang_code ");
 
-        if (tag != null) {
+        if (!StringUtils.isEmpty(tag.get("project_id"))
+            || !StringUtils.isEmpty(tag.get("lang_code"))
+            || !StringUtils.isEmpty(tag.get("lang_value"))
+            || !StringUtils.isEmpty(tag.get("category"))) {
+            sqlExceptSelect.append(" where 1=1 ");
+        }
+        
+        if (!StringUtils.isEmpty(tag.get("project_id"))) {
+            sqlExceptSelect.append(" and slt.project_id=").append(tag.get("project_id"));
+        }
 
-            if (!StringUtils.isEmpty(tag.get("project_id"))) {
-                sqlExceptSelect.append(" and slt.project_id=").append(tag.get("project_id"));
-            }
+        if (!StringUtils.isEmpty(tag.get("lang_code"))) {
+            sqlExceptSelect.append(" and lower(slc.lang_code) like '%")
+                           .append(tag.getStr("lang_code").trim().toLowerCase())
+                           .append("%'");
 
-            if (!StringUtils.isEmpty(tag.get("lang_code"))) {
-                sqlExceptSelect.append(" and lower(slc.lang_code) like '%")
-                               .append(tag.getStr("lang_code").trim().toLowerCase())
-                               .append("%'");
+        }
 
-            }
+        if (!StringUtils.isEmpty(tag.get("lang_value"))) {
+            sqlExceptSelect.append(" and lower(slc.lang_value) like '%")
+                           .append(tag.getStr("lang_value").trim().toLowerCase())
+                           .append("%'");
+        }
 
-            if (!StringUtils.isEmpty(tag.get("lang_value"))) {
-                sqlExceptSelect.append(" and lower(slc.lang_value) like '%")
-                               .append(tag.getStr("lang_value").trim().toLowerCase())
-                               .append("%'");
-            }
-
-            if (!StringUtils.isEmpty(tag.get("category"))) {
-                sqlExceptSelect.append(" and slt.category='")
-                               .append(tag.get("category"))
-                               .append("'");
-            }
+        if (!StringUtils.isEmpty(tag.get("category"))) {
+            sqlExceptSelect.append(" and slt.category='").append(tag.get("category")).append("'");
         }
 
         sqlExceptSelect.append(") locale left join (select pm.id, sc.lang_value as project_name");
