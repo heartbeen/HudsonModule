@@ -54,15 +54,24 @@
 	           S.ID || ';' || S.PATH AS ID,
 	           S.TEXT AS TEXT,
 	           S.ICONCLS
-	      FROM (SELECT *
-	              FROM SUB_FUNCTION
-	             WHERE ID IN (SELECT DISTINCT MODULEID
-	                            FROM ITEM_AUTHORITY
-	                           WHERE AUTHID IN (SELECT AUTHID
-	                                              FROM ROLE_POS
-	                                             WHERE ROLEID = ?
-	                                                OR ROLEID = ?))
-	             ORDER BY ID) S
+	      FROM (select item.id,
+               item.projectid,
+               item.path,
+               item.iconcls,
+               nvl(slc.lang_value, item.text) text
+          from (SELECT *
+                  FROM SUB_FUNCTION
+                 WHERE ID IN
+                       (SELECT DISTINCT MODULEID
+                          FROM ITEM_AUTHORITY
+                         WHERE AUTHID IN (SELECT AUTHID
+                                            FROM ROLE_POS
+                                           WHERE ROLEID = ?
+                                              OR ROLEID = ?))
+                 ORDER BY ID) item
+          left join SYS_LOCALE_CONTENT_T slc
+            on slc.lang_code = item.lang_code
+         and slc.locale_key = ?) S
 	      LEFT JOIN (select loc.lang_value as name,
 	                        pm.iconcls,
 	                        pm.id,
