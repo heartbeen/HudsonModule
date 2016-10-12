@@ -1,24 +1,24 @@
-﻿
+
 --1.增加国际化代码字段
 alter table PROJECT_MODULE add  (lang_code varchar2(200));
 alter table ITEM_AUTHORITY add  (lang_code varchar2(200));
 alter table SUB_FUNCTION add  (lang_code varchar2(200));
 
---增加模块
+--2.增加模块
 insert into PROJECT_MODULE (id, parentid, name, remark, iconcls, mainpanel, tabpanel, modulepath, moduledefine, modulename, mpath, typeid, lang_code)
 values (11, null,'系统管理','System','logo-shortcut','system-settings-win','system-settings-tabpanel','System:''js/system''','System.SystemProject','System','js/system', 0,'system.settings');
 insert into PROJECT_MODULE (id, parentid, name, remark, iconcls, mainpanel, tabpanel, modulepath, moduledefine, modulename, mpath, typeid, lang_code)
 values (12, 11,'参数','SystemParams','module-schedule', null, null, null, null, null, null, 0,'system.params');
 
---增加国际化功能
+--3.增加国际化功能
 insert into SUB_FUNCTION (id, projectid, text, path, iconcls, lang_code)
 values ('160920001', 12,'国际化','System.Internationalization','format-indent-qry-24','internationalization');
 
---2.将权限和用户设置转到系统管理之系统参数模块中
+--4.将权限和用户设置转到系统管理之系统参数模块中
 update SUB_FUNCTION set projectid = 12 where id ='140725022' or id='141229001';
 commit;
 
---3.增加国际化内容序列
+--5.增加国际化内容序列
 create sequence SYS_LOCALE_CONTENT_S
 minvalue 1
 maxvalue 9999999999999999999999999999
@@ -26,7 +26,7 @@ start with 81
 increment by 1
 cache 20;
 
---模块更新国际化编码
+--6.模块更新国际化编码
 update PROJECT_MODULE set lang_code='design.system' where id='8';
 update PROJECT_MODULE set lang_code='module.system' where id='1';
 update PROJECT_MODULE set lang_code='query.area' where id='5';
@@ -40,7 +40,7 @@ update PROJECT_MODULE set lang_code='base.source' where id='9';
 
 
 
---4.模块功能更新国际化编码
+--7.模块功能更新国际化编码
 update SUB_FUNCTION set lang_code='internationalization' where id='160920001';
 update SUB_FUNCTION set lang_code='emp.barcode' where id='160720001';
 update SUB_FUNCTION set lang_code='module.barcode' where id='160720002';
@@ -82,7 +82,7 @@ update SUB_FUNCTION set lang_code='part.process.working' where id='140725020';
 update SUB_FUNCTION set lang_code='module.process.working' where id='140725021';
 update SUB_FUNCTION set lang_code='project.task' where id='150714001';
 
---增加国际化功能接口
+--8.增加国际化功能接口
 insert into ITEM_AUTHORITY (authid, authname, userpathname, authtype, moduleid, lang_code)
 values ('00250', '/system/queryProjectModule', '查询模块信息', '0', '160920001', null);
 insert into ITEM_AUTHORITY (authid, authname, userpathname, authtype, moduleid, lang_code)
