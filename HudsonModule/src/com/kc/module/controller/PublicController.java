@@ -377,7 +377,7 @@ public class PublicController extends Controller {
      * 获取模块分类列表信息
      */
     public void getSubFunctionList() {
-        renderJson(SubFunction.dao.subFunctionData());
+        renderJson(SubFunction.dao.subFunctionData(ControlUtils.getLocale(this)));
     }
 
     /**

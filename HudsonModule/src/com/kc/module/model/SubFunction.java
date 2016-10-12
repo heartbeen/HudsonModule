@@ -17,9 +17,16 @@ public class SubFunction extends ModelFinal<SubFunction> {
      * 
      * @return
      */
-    public List<Record> subFunctionData() {
-        String sql = "select id,text from sub_function";
-        return Db.find(sql);
+    public List<Record> subFunctionData(String locale) {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("select sf.id, nvl(slc.lang_value, sf.text) text ");
+        sql.append("  from sub_function sf ");
+        sql.append("  left join sys_locale_content_t slc ");
+        sql.append("    on slc.lang_code = sf.lang_code ");
+        sql.append("   and slc.locale_key = 'zh_CN' ");
+
+        return Db.find(sql.toString(), sql);
     }
 
     /**
