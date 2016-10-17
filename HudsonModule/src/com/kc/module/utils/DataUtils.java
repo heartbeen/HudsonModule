@@ -1267,4 +1267,26 @@ public class DataUtils {
 
         return arr;
     }
+    
+    /**
+     * 合并两个List数组
+     * 
+     * @param tt
+     * @param ss
+     * @return
+     */
+    public static <T> List<T> mergeList(List<T> tt, List<T> ss) {
+        // 声明一个新的List
+        List<T> cc = new ArrayList<T>();
+        // 复制数组TT
+        for (T i : tt) {
+            cc.add(i);
+        }
+        // 复制数组SS
+        for (T m : ss) {
+            cc.add(m);
+        }
+
+        return cc;
+    }
 }
