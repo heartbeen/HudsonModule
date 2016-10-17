@@ -851,6 +851,15 @@ public class DateUtils {
         return getNextField(day, format, format, Calendar.DAY_OF_WEEK, dis);
     }
 
+    /**
+     * 判断一个时间字符串是否指定格式的时间
+     * 
+     * @param date
+     *            时间字符串
+     * @param format
+     *            日期格式遵循Java日期格式
+     * @return
+     */
     public static boolean isDate(String date, String format) {
         Date transDate = DateUtils.strToDate(date, format);
         return (transDate != null);
