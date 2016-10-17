@@ -28,6 +28,8 @@ public class DeviseDepartmentExtract extends ExtractDao {
 
         builder.append("SELECT ID,NAME,STEPID FROM REGION_DEPART WHERE ISAVA = 0 AND STEPID LIKE (SELECT STEPID ");
         builder.append("FROM REGION_DEPART WHERE ID = ?) || '%' ORDER BY STEPID");
+        
+        System.out.println(regionid);
 
         List<Record> rlist = Db.find(builder.toString(), regionid);
         if (rlist == null || rlist.size() == 0) {

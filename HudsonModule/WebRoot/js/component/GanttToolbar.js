@@ -25,6 +25,12 @@ Ext.define("Project.component.GanttToolbar", {
 			},
 
 			items : [ {
+				text : '删除所有',
+				iconCls : 'gtk-remove-16'
+			}, {
+				text : '删除所有',
+				iconCls : 'gtk-remove-16'
+			}, {
 				tooltip : '向前一周',
 				iconCls : 'icon icon-left',
 				handler : function() {

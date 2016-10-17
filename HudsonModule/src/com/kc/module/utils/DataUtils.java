@@ -228,8 +228,7 @@ public class DataUtils {
      * @param key
      * @return
      */
-    public static <E extends ModelFinal<E>> Map<String, List<E>> moduleClassific(List<E> list,
-                                                                                 String key) {
+    public static <E extends ModelFinal<E>> Map<String, List<E>> moduleClassific(List<E> list, String key) {
         Map<String, List<E>> map = new LinkedHashMap<String, List<E>>();
         List<E> vList;
 
@@ -298,16 +297,8 @@ public class DataUtils {
             acraftid = isIn ? acraftid : outcraftid;
             String mcraftid = isIn ? acraftid : ConstUtils.SCH_OUT_FLAG + outcraftid;
 
-            acraftcode = isIn ? acraftcode : outguestname
-                                             + (StringUtils.isEmpty(outcraftcode) ? ""
-                                                                                 : "["
-                                                                                   + outcraftcode
-                                                                                   + "]");
-            adepartname = isIn ? adepartname : outguestname
-                                               + (StringUtils.isEmpty(outcraftcode) ? ""
-                                                                                   : "["
-                                                                                     + outcraftcode
-                                                                                     + "]");
+            acraftcode = isIn ? acraftcode : outguestname + (StringUtils.isEmpty(outcraftcode) ? "" : "[" + outcraftcode + "]");
+            adepartname = isIn ? adepartname : outguestname + (StringUtils.isEmpty(outcraftcode) ? "" : "[" + outcraftcode + "]");
 
             if (!start) {
                 tpartbar = apartbar;
@@ -347,8 +338,7 @@ public class DataUtils {
 
                         record.add(aff);
 
-                        String tempDeptName = (tstateid.equals("20205") ? tdeptname
-                                                                       : aff.getRegion());
+                        String tempDeptName = (tstateid.equals("20205") ? tdeptname : aff.getRegion());
 
                         aff = new ActualFlowForm();
 
@@ -500,9 +490,7 @@ public class DataUtils {
                     upCraftid = up.get("lprocraftid");
                     currentCraftid = current.get("lprocraftid");
 
-                    if (upCraftid != null
-                        && currentCraftid != null
-                        && !currentCraftid.equals(upCraftid)) {
+                    if (upCraftid != null && currentCraftid != null && !currentCraftid.equals(upCraftid)) {
                         addActualRecord(map, up, false);
                     }
 
@@ -510,9 +498,7 @@ public class DataUtils {
 
                 } else {
                     // 同时为空表示为两条记录都为签收,或者前一个排程为签收动作
-                    if (up.get("lprocraftid") == null
-                        && current.get("lprocraftid") == null
-                        || "20208".equals(up.get("lpartstateid"))) {
+                    if (up.get("lprocraftid") == null && current.get("lprocraftid") == null || "20208".equals(up.get("lpartstateid"))) {
                         up = current;
                         continue;
                     }
@@ -564,9 +550,7 @@ public class DataUtils {
      * @param flag
      *            此条记录是否为工件加工記錄的最后一条
      */
-    private static void createNewRecrodList(Map<String, List<Record>> map,
-                                            Record record,
-                                            boolean flag) {
+    private static void createNewRecrodList(Map<String, List<Record>> map, Record record, boolean flag) {
         List<Record> actualList = new ArrayList<Record>();
         record.set("flag", flag);
         actualList.add(record);
@@ -607,9 +591,7 @@ public class DataUtils {
      *            主干所要显示的字段
      * @return
      */
-    public static <E extends ModelFinal<E>> Map<Record, List<E>> modelTwoLayout(List<E> list,
-                                                                                String mainField,
-                                                                                String... correlation) {
+    public static <E extends ModelFinal<E>> Map<Record, List<E>> modelTwoLayout(List<E> list, String mainField, String... correlation) {
         Map<Record, List<E>> partMap = new LinkedHashMap<Record, List<E>>();
         Record record = new Record();
         List<E> mpList;
@@ -677,10 +659,7 @@ public class DataUtils {
      *            主干所要显示的字段
      * @return
      */
-    public static Map<Record, List<Record>> recordTwoLayout(List<Record> list,
-                                                            String mainField,
-                                                            String leafFile,
-                                                            String... correlation) {
+    public static Map<Record, List<Record>> recordTwoLayout(List<Record> list, String mainField, String leafFile, String... correlation) {
         Map<Record, List<Record>> partMap = new LinkedHashMap<Record, List<Record>>();
         Record record = new Record();
         List<Record> mpList;
@@ -737,9 +716,7 @@ public class DataUtils {
             json.append("\"cls\":\"").append(r.get("cls")).append("\",");
             json.append("\"checked\": false,");
             json.append("\"children\":");
-            json.append(JsonKit.toJson(map.get(r), 2)
-                               .replace("partlistcode", "text")
-                               .replace("\"'l'\":\"l\"", "\"leaf\":true"));
+            json.append(JsonKit.toJson(map.get(r), 2).replace("partlistcode", "text").replace("\"'l'\":\"l\"", "\"leaf\":true"));
             json.append("}").append(iterator.hasNext() ? "," : "");
         }
 
@@ -861,8 +838,7 @@ public class DataUtils {
                     method = objClass.getMethod("get" + fieldName);
                     res = method.invoke(obj);
                     if (method.getReturnType() == Date.class) {
-                        model.set(fieldName, res != null ? new Timestamp(((Date) res).getTime())
-                                                        : res);
+                        model.set(fieldName, res != null ? new Timestamp(((Date) res).getTime()) : res);
                     } else {
                         model.set(fieldName, res);
                     }
@@ -894,11 +870,9 @@ public class DataUtils {
                 newsheet = wb.createSheet(newsheetname);
                 // 设置打印参数
                 newsheet.setMargin(HSSFSheet.TopMargin, fromsheet.getMargin(HSSFSheet.TopMargin));// 页边距（上）
-                newsheet.setMargin(HSSFSheet.BottomMargin,
-                                   fromsheet.getMargin(HSSFSheet.BottomMargin));// 页边距（下）
+                newsheet.setMargin(HSSFSheet.BottomMargin, fromsheet.getMargin(HSSFSheet.BottomMargin));// 页边距（下）
                 newsheet.setMargin(HSSFSheet.LeftMargin, fromsheet.getMargin(HSSFSheet.LeftMargin));// 页边距（左）
-                newsheet.setMargin(HSSFSheet.RightMargin,
-                                   fromsheet.getMargin(HSSFSheet.RightMargin));// 页边距（右
+                newsheet.setMargin(HSSFSheet.RightMargin, fromsheet.getMargin(HSSFSheet.RightMargin));// 页边距（右
 
                 fromsheet.getDrawingEscherAggregate();
 
@@ -1015,10 +989,7 @@ public class DataUtils {
         // 声明存放properties内容的类
         Properties properties = new Properties();
         // 获取文件对应的路径
-        String path = DataUtils.class.getClassLoader()
-                                     .getResource(file)
-                                     .getPath()
-                                     .replace("%20", " ");
+        String path = DataUtils.class.getClassLoader().getResource(file).getPath().replace("%20", " ");
 
         try {
             // 加载文件内容
@@ -1055,10 +1026,7 @@ public class DataUtils {
 
         InputStream input = null;
 
-        String path = DataUtils.class.getClassLoader()
-                                     .getResource(file)
-                                     .getPath()
-                                     .replace("%20", " ");
+        String path = DataUtils.class.getClassLoader().getResource(file).getPath().replace("%20", " ");
 
         try {
             input = new FileInputStream(path);
@@ -1299,6 +1267,28 @@ public class DataUtils {
         arr = list.toArray(arr);
 
         return arr;
+    }
+    
+    /**
+     * 合并两个List数组
+     * 
+     * @param tt
+     * @param ss
+     * @return
+     */
+    public static <T> List<T> mergeList(List<T> tt, List<T> ss) {
+        // 声明一个新的List
+        List<T> cc = new ArrayList<T>();
+        // 复制数组TT
+        for (T i : tt) {
+            cc.add(i);
+        }
+        // 复制数组SS
+        for (T m : ss) {
+            cc.add(m);
+        }
+
+        return cc;
     }
 
     /**
