@@ -344,7 +344,7 @@ public class ModuleConfig extends JFinalConfig {
         me.add("/devise/share", DeviseShareController.class);
 
         // rest
-        me.add("/locale/content", SysLocaleContentController.class);
+        //me.add("/locale/content", SysLocaleContentController.class);
 
     }
     //
