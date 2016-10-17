@@ -42,68 +42,68 @@ Ext.override(Ext.PagingToolbar, {
 	}
 });
 
-Ext.define('Module.UploadModuleFileWindow', {
-	extend : 'Ext.window.Window',
-
-	height : 78,
-	width : 560,
-	resizable : false,
-	modal : true,
-	layout : {
-		type : 'border'
-	},
-	title : '导入模具资料',
-
-	initComponent : function() {
-		var me = this;
-
-		Ext.applyIf(me, {
-			items : [ {
-				xtype : 'form',
-				region : 'center',
-				border : false,
-				layout : {
-					type : 'column'
-				},
-				bodyPadding : 10,
-				items : [ {
-					name : 'modulefile',
-					xtype : 'filefield',
-					width : 436,
-					regex : new RegExp('.xls|.xlsx'),
-					regexText : "文件类型错误,请上传(.xls|.xlsx)格式文件!",
-					fieldLabel : '请选择上传文件'
-				}, {
-					xtype : 'button',
-					margin : '0 0 0 5',
-					width : 80,
-					iconCls : 'table_go-16',
-					text : '提交信息',
-					handler : function() {
-						this.up('form').getForm().submit({
-							url : 'module/manage/uploadExchangeModuleInfo',
-							method : 'POST',
-							success : function(form, action) {
-								Ext.getCmp('query-module-list').getStore().reload();
-								var backJson = Ext.JSON.decode(action.response.responseText);
-								showSuccess(backJson.msg);
-
-								me.close();
-							},
-							failure : function(form, action) {
-								var backJson = Ext.JSON.decode(action.response.responseText);
-								showError(backJson.msg);
-							}
-						});
-					}
-				} ]
-			} ]
-		});
-
-		me.callParent(arguments);
-	}
-
-});
+// Ext.define('Module.UploadModuleFileWindow', {
+// extend : 'Ext.window.Window',
+//
+// height : 78,
+// width : 560,
+// resizable : false,
+// modal : true,
+// layout : {
+// type : 'border'
+// },
+// title : '导入模具资料',
+//
+// initComponent : function() {
+// var me = this;
+//
+// Ext.applyIf(me, {
+// items : [ {
+// xtype : 'form',
+// region : 'center',
+// border : false,
+// layout : {
+// type : 'column'
+// },
+// bodyPadding : 10,
+// items : [ {
+// name : 'modulefile',
+// xtype : 'filefield',
+// width : 436,
+// regex : new RegExp('.xls|.xlsx'),
+// regexText : "文件类型错误,请上传(.xls|.xlsx)格式文件!",
+// fieldLabel : '请选择上传文件'
+// }, {
+// xtype : 'button',
+// margin : '0 0 0 5',
+// width : 80,
+// iconCls : 'table_go-16',
+// text : '提交信息',
+// handler : function() {
+// this.up('form').getForm().submit({
+// url : 'module/manage/uploadExchangeModuleInfo',
+// method : 'POST',
+// success : function(form, action) {
+// Ext.getCmp('query-module-list').getStore().reload();
+// var backJson = Ext.JSON.decode(action.response.responseText);
+// showSuccess(backJson.msg);
+//
+// me.close();
+// },
+// failure : function(form, action) {
+// var backJson = Ext.JSON.decode(action.response.responseText);
+// showError(backJson.msg);
+// }
+// });
+// }
+// } ]
+// } ]
+// });
+//
+// me.callParent(arguments);
+// }
+//
+// });
 
 Ext.define('CheckMouldInformation', {
 	extend : 'Ext.window.Window',
@@ -445,49 +445,52 @@ Ext.define('Module.CoxonQueryModuleCode', {
 					handler : function() {
 						me.moduleOperate(this.up('gridpanel'), '永久删除', '模具资料', 'module/manage/deleteModuleInfo');
 					}
-				}, '-', {
-					text : '<b>导出东莞</b>',
-					iconCls : 'door_out-16',
-					todata : 'dgdata',
-					handler : function() {
-						var selR = this.up('gridpanel').getSelectionModel().getSelection();
-						if (!selR.length) {
-							showError('未选中任何要导出的模具信息');
-							return;
-						}
-
-						Ext.create('Ext.form.Panel', {
-							standardSubmit : true,
-						}).submit({
-							url : 'public/exportModuleReport',
-							params : {
-								modulebarcode : selR[0].get('modulebarcode'),
-								to : this.todata
-							},
-							success : function(form, action) {
-								showSuccess("下载成功!");
-							},
-							failure : function(form, action) {
-								switch (action.failureType) {
-								case Ext.form.action.Action.CLIENT_INVALID:
-									showError("提交数据出现错误!");
-									break;
-								case Ext.form.action.Action.CONNECT_FAILURE:
-									showError("下载出现错误!");
-									break;
-								case Ext.form.action.Action.SERVER_INVALID:
-									showError("服务器错误!");
-								}
-							}
-						});
-					}
-				}, '-', {
-					text : '<b>导入资料</b>',
-					iconCls : 'door_in-16',
-					handler : function() {
-						new Module.UploadModuleFileWindow().show();
-					}
-				} ],
+				}
+				// , '-', {
+				// text : '<b>导出东莞</b>',
+				// iconCls : 'door_out-16',
+				// todata : 'dgdata',
+				// handler : function() {
+				// var selR =
+				// this.up('gridpanel').getSelectionModel().getSelection();
+				// if (!selR.length) {
+				// showError('未选中任何要导出的模具信息');
+				// return;
+				// }
+				//
+				// Ext.create('Ext.form.Panel', {
+				// standardSubmit : true,
+				// }).submit({
+				// url : 'public/exportModuleReport',
+				// params : {
+				// modulebarcode : selR[0].get('modulebarcode'),
+				// to : this.todata
+				// },
+				// success : function(form, action) {
+				// showSuccess("下载成功!");
+				// },
+				// failure : function(form, action) {
+				// switch (action.failureType) {
+				// case Ext.form.action.Action.CLIENT_INVALID:
+				// showError("提交数据出现错误!");
+				// break;
+				// case Ext.form.action.Action.CONNECT_FAILURE:
+				// showError("下载出现错误!");
+				// break;
+				// case Ext.form.action.Action.SERVER_INVALID:
+				// showError("服务器错误!");
+				// }
+				// }
+				// });
+				// }
+				// }, '-', {
+				// text : '<b>导入资料</b>',
+				// iconCls : 'door_in-16',
+				// handler : function() {
+				// new Module.UploadModuleFileWindow().show();
+				// }
+				// }
+				],
 				bbar : Ext.create('Ext.PagingToolbar', {
 					store : me.queryStore,
 					displayInfo : true,

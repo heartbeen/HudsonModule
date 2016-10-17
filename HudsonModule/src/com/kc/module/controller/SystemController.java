@@ -1,16 +1,26 @@
 package com.kc.module.controller;
 
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import com.jfinal.aop.ClearInterceptor;
 import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.IAtom;
+import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.kc.module.model.Authority;
 import com.kc.module.model.ProjectModule;
 import com.kc.module.model.RolePosition;
 import com.kc.module.model.SubFunction;
+import com.kc.module.model.sys.SysLocaleContent;
+import com.kc.module.model.sys.SysLocaleTag;
 import com.kc.module.utils.ControlUtils;
+import com.kc.module.utils.I18n;
 
 // @Before(SystemInterceptorStack.class)
 @ClearInterceptor
@@ -128,8 +138,218 @@ public class SystemController extends Controller {
 
     }
 
-    // private void cleartRoleCache(String roldId) {
-    // CacheKit.remove("projectModule", roldId);
-    // CacheKit.remove("moduleProject", roldId);
-    // }
+    /**
+     * 
+     */
+    public void queryProjectModule() {
+
+        List<ProjectModule> moduleList = ProjectModule.dao.queryProjectModule(ControlUtils.getLocale(this));
+
+        renderJson(moduleList);
+    }
+
+    /**
+     * 查询厂商资料
+     * 
+     * @throws UnsupportedEncodingException
+     */
+    public void queryLocaleTag() {
+        Record condition = new Record();
+        condition.set("lang_code", getPara("lang_code"));
+        condition.set("lang_value", getPara("lang_value"));
+        condition.set("project_id", getPara("project_id"));
+        condition.set("category", getPara("category"));
+
+        int page = getParaToInt("page");
+        int start = getParaToInt("start");
+        int limit = getParaToInt("limit");
+
+        Page<SysLocaleTag> pages = SysLocaleTag.dao.findLocaleTag(condition,
+                                                                  ControlUtils.getLocale(this),
+                                                                  page,
+                                                                  start,
+                                                                  limit);
+
+        setAttr("success", true);
+        setAttr("info", pages.getList());
+        setAttr("totalCount", pages.getTotalRow());
+
+        renderJson();
+
+    }
+
+    /**
+     * 通过国际化编码标签得到所有语言内容
+     */
+    public void queryLocaleContentByTag() {
+        renderJson(SysLocaleContent.dao.findLocaleContentByTag(getPara("lang_code")));
+    }
+
+    /**
+     * 新建国际化编码
+     */
+    public void saveLocaleTag() {
+        SysLocaleTag tag = getModel(SysLocaleTag.class, "tag");
+        String newCode = getPara("new_code");
+
+        if (tag.get("lang_code") == null && newCode != null && tag.findById(newCode) == null) {
+            tag.set("lang_code", newCode);
+            tag.set("create_by", ControlUtils.getAccountName(this));
+            tag.set("create_date", new Timestamp(new Date().getTime()));
+            tag.set("modify_by", ControlUtils.getAccountName(this));
+            tag.set("modify_date", new Timestamp(new Date().getTime()));
+
+            boolean success = tag.save();
+
+            setAttr("success", success);
+            setAttr("msg", tag.get("lang_code")
+                           + (success ? "<br>新建国际化编码成功！" : "<br>新建国际化编码失败,请重试！"));
+
+            if (success) {
+                setAttr("tag", tag);
+            }
+        } else {
+            setAttr("success", false);
+            setAttr("msg", tag.get("lang_code") + "<br>国际化编码已存在！");
+        }
+
+        renderJson();
+
+    }
+
+    /**
+     * 更新国际化编码
+     */
+    public void updateLocaleTag() {
+        final Controller control = this;
+        final String accountName = ControlUtils.getAccountName(this);
+        final SysLocaleTag tag = getModel(SysLocaleTag.class, "tag");
+        final String newCode = getPara("new_code");
+
+        if (tag.get("lang_code") != null && newCode != null) {
+
+            tag.set("modify_by", accountName);
+            tag.set("modify_date", new Timestamp(new Date().getTime()));
+
+            boolean success = Db.tx(new IAtom() {
+                public boolean run() throws SQLException {
+
+                    boolean success = tag.update();
+
+                    if (!newCode.equals(tag.get("lang_code"))) {
+                        success = success && tag.updateLocaleTag(newCode);
+                        success = success
+                                  && SysLocaleContent.dao.upateLocaleContentCode(newCode,
+                                                                                 tag.getStr("lang_code"));
+
+                        if (success) {
+                            I18n.update(tag.getStr("lang_code"), newCode);
+                        }
+
+                    }
+
+                    return success;
+                }
+            });
+
+            setAttr("success", success);
+            setAttr("msg", success ? "更新国际化编码成功！" : "更新国际化编码失败,请重试！");
+
+            if (success) {
+                setAttr("tag", tag);
+            }
+        } else {
+            setAttr("success", false);
+            setAttr("msg", tag.get("lang_code") + "<br>国际化编码已存在！");
+        }
+
+        renderJson();
+    }
+
+    /**
+     * 批量删除国际化编码
+     */
+    public void deleteLocaleTag() {
+        final String tags = getPara("tags");
+
+        if (tags != null) {
+
+            boolean success = Db.tx(new IAtom() {
+                public boolean run() throws SQLException {
+
+                    String[] localeTags = tags.split(",");
+
+                    return SysLocaleTag.dao.deleteLocaleTag(localeTags)
+                           && SysLocaleContent.dao.deleteLocaleContent(localeTags);
+                }
+            });
+
+            setAttr("success", success);
+            // "删除国际化编码成功！"
+            // "删除国际化编码失败！"
+            setAttr("msg",
+                    success ? I18n.get(this, "system.systemparams.msg.locale.delete.success")
+                           : I18n.get(this, "system.systemparams.msg.locale.delete.fail"));
+
+        } else {
+            setAttr("success", true);
+            setAttr("msg", "请选择国际化编码!");
+        }
+
+        renderJson();
+    }
+
+    /**
+     * 新建国际化内容
+     */
+    public void saveLocaleContent() {
+
+        SysLocaleContent content = getModel(SysLocaleContent.class, "content");
+
+        content.set("id", "SYS_LOCALE_CONTENT_S.nextval");
+        content.set("create_by", ControlUtils.getAccountName(this));
+        content.set("create_date", new Timestamp(new Date().getTime()));
+        content.set("modify_by", ControlUtils.getAccountName(this));
+        content.set("modify_date", new Timestamp(new Date().getTime()));
+
+        boolean success = content.save();
+
+        setAttr("success", success);
+        setAttr("msg", success ? "新建国际化内容成功！" : "新建国际化内容失败,请重试！");
+
+        if (success) {
+            setAttr("content", content);
+            I18n.put(content.getStr("locale_key"),
+                     content.getStr("lang_code"),
+                     content.getStr("lang_value"));
+        }
+
+        renderJson();
+    }
+
+    /**
+     * 更新国际化内容
+     */
+    public void updateLocaleContent() {
+
+        SysLocaleContent content = getModel(SysLocaleContent.class, "content");
+
+        content.set("modify_by", ControlUtils.getAccountName(this));
+        content.set("modify_date", new Timestamp(new Date().getTime()));
+
+        boolean success = content.update();
+
+        setAttr("success", success);
+        setAttr("msg", success ? "更新国际化内容成功！" : "更新国际化内容失败,请重试！");
+
+        if (success) {
+            setAttr("content", content);
+            I18n.put(content.getStr("locale_key"),
+                     content.getStr("lang_code"),
+                     content.getStr("lang_value"));
+        }
+
+        renderJson();
+    }
+
 }

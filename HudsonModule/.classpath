@@ -8,7 +8,7 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/jfinal-1.9-bin.jar"/>
+	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/jfinal-1.9-bin.jar" sourcepath="C:/Users/xuwei/Downloads/jfinal-jfinal-1.9.zip"/>
 	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/commons-codec-1.8.jar"/>
 	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/cos-26Dec2008.jar"/>
 	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/druid-1.0.9.jar"/>

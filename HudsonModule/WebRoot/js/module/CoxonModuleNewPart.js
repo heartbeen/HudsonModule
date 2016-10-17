@@ -1,3 +1,64 @@
+Ext.define('Module.UploadModuleFileWindow', {
+	extend : 'Ext.window.Window',
+
+	height : 78,
+	width : 560,
+	resizable : false,
+	modal : true,
+	layout : {
+		type : 'border'
+	},
+	title : '导入模具资料',
+
+	initComponent : function() {
+		var me = this;
+
+		Ext.applyIf(me, {
+			items : [ {
+				xtype : 'form',
+				region : 'center',
+				border : false,
+				layout : {
+					type : 'column'
+				},
+				bodyPadding : 10,
+				items : [ {
+					name : 'modulefile',
+					xtype : 'filefield',
+					width : 436,
+					regex : new RegExp('.xls|.xlsx'),
+					regexText : "文件类型错误,请上传(.xls|.xlsx)格式文件!",
+					fieldLabel : '请选择上传文件'
+				}, {
+					xtype : 'button',
+					margin : '0 0 0 5',
+					width : 80,
+					iconCls : 'table_go-16',
+					text : '提交信息',
+					handler : function() {
+						this.up('form').getForm().submit({
+							url : 'module/manage/uploadExchangeModuleInfo',
+							method : 'POST',
+							success : function(form, action) {
+								Ext.getCmp('design-module-list').getStore().reload();
+								var backJson = Ext.JSON.decode(action.response.responseText);
+
+								showSuccess(backJson.msg);
+								me.close();
+							},
+							failure : function(form, action) {
+								var backJson = Ext.JSON.decode(action.response.responseText);
+								showError(backJson.msg);
+							}
+						});
+					}
+				} ]
+			} ]
+		});
+
+		me.callParent(arguments);
+	}
+});
 Ext.define('ScrapPartsWindow', {
 	extend : 'Ext.window.Window',
 
@@ -135,7 +196,7 @@ Ext.define('Module.CoxonModuleNewPart', {
 						region : 'west',
 						layout : 'border',
 						split : true,
-						width : 300,
+						width : 360,
 						items : [ {
 							xtype : 'gridpanel',
 							id : 'design-module-list',
@@ -146,6 +207,7 @@ Ext.define('Module.CoxonModuleNewPart', {
 								xtype : 'toolbar',
 								items : [ {
 									id : 'cmnp-chk-by-guest',
+									margins : '0 0 0 2',
 									xtype : 'checkbox',
 									boxLabel : '依番号'
 								}, ''
@@ -237,6 +299,12 @@ Ext.define('Module.CoxonModuleNewPart', {
 									scope : me,
 									handler : function() {
 										me.uploadModulePartFile(true);
+									}
+								}, '-', {
+									text : '转入清单',
+									iconCls : 'view-sort-ascending-16',
+									handler : function() {
+										new Module.UploadModuleFileWindow().show();
 									}
 								} ]
 							} ],
@@ -416,9 +484,9 @@ Ext.define('Module.CoxonModuleNewPart', {
 							} ]
 
 						}, Ext.create('ModulePartTreePanel', {
+							id : 'cmnp-module-part-info',
 							region : 'center',
 							title : '模具工件',
-							id : 'cmnp-module-part-info',
 							moduleInfo : null,
 							listeners : {
 								itemdblclick : function(grid, record) {
@@ -1007,6 +1075,53 @@ Ext.define('ModulePartTreePanel', {
 			this.up('gridpanel').onGetModuleSection();
 		}
 
+	}, '-', {
+		text : '转出东莞',
+		iconCls : 'view-sort-descending-16',
+		todata : 'dgdata',
+		handler : function() {
+			// 获取零件清单栏
+			var useGrid = this.up('gridpanel');
+			if (!useGrid.moduleInfo) {
+				showError('未选中任何要导出的模具信息');
+				return;
+			}
+
+			// 零件清单
+			var partList = [], unitList = [];
+			var partSel = useGrid.getSelectionModel().getSelection();
+			for ( var x in partSel) {
+				partList.push(partSel[x].get('partbarlistcode'));
+				unitList.push(partSel[x].get('partbarcode'));
+			}
+
+			Ext.create('Ext.form.Panel', {
+				standardSubmit : true,
+			}).submit({
+				url : 'public/exportModuleReport',
+				params : {
+					modulebarcode : useGrid.moduleInfo.get('modulebarcode'),
+					to : this.todata,
+					partlist : Ext.JSON.encode(partList),
+					unitlist : Ext.JSON.encode(unitList)
+				},
+				success : function(form, action) {
+					showSuccess("下载成功!");
+				},
+				failure : function(form, action) {
+					switch (action.failureType) {
+					case Ext.form.action.Action.CLIENT_INVALID:
+						showError("提交数据出现错误!");
+						break;
+					case Ext.form.action.Action.CONNECT_FAILURE:
+						showError("下载出现错误!");
+						break;
+					case Ext.form.action.Action.SERVER_INVALID:
+						showError("服务器错误!");
+					}
+				}
+			});
+		}
 	} ],
 	rowLines : true,
 	columnLines : true,

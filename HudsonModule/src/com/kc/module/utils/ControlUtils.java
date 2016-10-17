@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -201,7 +202,10 @@ public class ControlUtils {
      */
     public static String getUploadRealPath(Controller c) {
         if (StrKit.isBlank(ConstUtils.UPLOAD_REAL_PATH)) {
-            ConstUtils.UPLOAD_REAL_PATH = getAppRealPath(c).concat(File.separator).concat("WEB-INF").concat(File.separator).concat("upload");
+            ConstUtils.UPLOAD_REAL_PATH = getAppRealPath(c).concat(File.separator)
+                                                           .concat("WEB-INF")
+                                                           .concat(File.separator)
+                                                           .concat("upload");
         }
         return ConstUtils.UPLOAD_REAL_PATH;
     }
@@ -215,7 +219,8 @@ public class ControlUtils {
     public static String getModuleRealPath(Controller c) {
         if (StrKit.isBlank(ConstUtils.MODULE_REAL_PATH)) {
 
-            ConstUtils.MODULE_REAL_PATH = getUploadRealPath(c).concat(File.separator).concat("module");
+            ConstUtils.MODULE_REAL_PATH = getUploadRealPath(c).concat(File.separator)
+                                                              .concat("module");
         }
         return ConstUtils.MODULE_REAL_PATH;
     }
@@ -229,7 +234,8 @@ public class ControlUtils {
     public static String getModuleProductRealPath(Controller c) {
         if (StrKit.isBlank(ConstUtils.MODULE_PRODUCT_PICTURE)) {
 
-            ConstUtils.MODULE_PRODUCT_PICTURE = getModuleRealPath(c).concat(File.separator).concat("pic");
+            ConstUtils.MODULE_PRODUCT_PICTURE = getModuleRealPath(c).concat(File.separator)
+                                                                    .concat("pic");
         }
         return ConstUtils.MODULE_PRODUCT_PICTURE;
     }
@@ -243,7 +249,8 @@ public class ControlUtils {
     public static String getModulePartRealPath(Controller c) {
         if (StrKit.isBlank(ConstUtils.MODULE_PART_REAL_PATH)) {
 
-            ConstUtils.MODULE_PART_REAL_PATH = getModuleRealPath(c).concat(File.separator).concat("part");
+            ConstUtils.MODULE_PART_REAL_PATH = getModuleRealPath(c).concat(File.separator)
+                                                                   .concat("part");
         }
         return ConstUtils.MODULE_PART_REAL_PATH;
     }
@@ -256,7 +263,8 @@ public class ControlUtils {
      */
     public static String getModuleMeasureRealPath(Controller c) {
         if (StrKit.isBlank(ConstUtils.MODULE_MEASURE_PICTURE)) {
-            ConstUtils.MODULE_PART_REAL_PATH = getModuleRealPath(c).concat(File.separator).concat("measure");
+            ConstUtils.MODULE_PART_REAL_PATH = getModuleRealPath(c).concat(File.separator)
+                                                                   .concat("measure");
         }
         return ConstUtils.MODULE_PART_REAL_PATH;
     }
@@ -304,12 +312,15 @@ public class ControlUtils {
      * @param response
      * @param fileName
      */
-    public static void exportFile(HSSFWorkbook workBook, HttpServletResponse response, String fileName) {
+    public static void exportFile(HSSFWorkbook workBook,
+                                  HttpServletResponse response,
+                                  String fileName) {
 
         response.setCharacterEncoding("utf-8");
         response.reset();// 清空输出流
         response.setContentType("application/vnd.ms-excel;charset=utf-8");// 定义输出类型
-        response.setHeader("Content-disposition", "attachment; filename=" + StringUtils.toUTF8String(fileName) + ".xls");// 设定输出文件头
+        response.setHeader("Content-disposition",
+                           "attachment; filename=" + StringUtils.toUTF8String(fileName) + ".xls");// 设定输出文件头
 
         try {
             ServletOutputStream out = response.getOutputStream();
@@ -390,7 +401,12 @@ public class ControlUtils {
      * @param response
      * @param fileName
      */
-    public synchronized static void downLoadImage(Controller controller, String param, String none, int width, int height, String format) {
+    public synchronized static void downLoadImage(Controller controller,
+                                                  String param,
+                                                  String none,
+                                                  int width,
+                                                  int height,
+                                                  String format) {
         // 如果文件不存在直接返回
         String root = controller.getSession().getServletContext().getRealPath("/");
         //
@@ -444,5 +460,30 @@ public class ControlUtils {
         }
 
         return control.getParaToBoolean(para);
+    }
+
+    /**
+     * 得到用户所选择的语言
+     * 
+     * @param control
+     * @return
+     */
+    public static String getLocale(Controller control) {
+        String locale = Locale.getDefault().getLanguage() + "_" + Locale.getDefault().getCountry();
+
+        String lang = control.getCookie("lang");
+
+        if (StrKit.notBlank(lang)) {
+            // 处理旧cookie
+            if (!lang.startsWith("zh") && !lang.startsWith("en")) {
+                lang = "zh_" + lang;
+            }
+        } else {
+            // 只要不是中文国家，就统一为英文
+            lang = locale.startsWith("zh") ? locale : "en_US";
+
+        }
+
+        return lang;
     }
 }

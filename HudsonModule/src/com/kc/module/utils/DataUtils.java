@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -1288,5 +1289,25 @@ public class DataUtils {
         }
 
         return cc;
+    }
+
+    /**
+     * model转换成Key-value
+     * 
+     * @param list
+     * @param keyField
+     * @param valueField
+     * @return
+     */
+    public static <T extends ModelFinal<T>> Map<String, String> modelToMap(List<T> list,
+                                                                           String keyField,
+                                                                           String valueField) {
+        Map<String, String> map = new HashMap<String, String>();
+
+        for (int i = 0; i < list.size(); i++) {
+            map.put(list.get(i).getStr(keyField), list.get(i).getStr(valueField));
+        }
+
+        return map;
     }
 }

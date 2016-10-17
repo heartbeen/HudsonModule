@@ -52,7 +52,8 @@ public class ModuleBaseController extends Controller {
         boolean succeed = Db.tx(new IAtom() {
             public boolean run() throws SQLException {
 
-                FactoryForm factoryForm = JsonUtils.josnToBean(getPara("factory"), FactoryForm.class);
+                FactoryForm factoryForm = JsonUtils.josnToBean(getPara("factory"),
+                                                               FactoryForm.class);
                 Factory factory = factoryForm.toModel();
 
                 factory.set("id", Barcode.FACTORY.nextVal());
@@ -163,7 +164,8 @@ public class ModuleBaseController extends Controller {
         if (Role.dao.findByName(role.getStr("rolename")) != null) {
             setAttr("msg", "已存在角色");
         } else {
-            role.set("ROLEID", Barcode.ROLE.nextVal()).set("createTime", new java.sql.Timestamp(new Date().getTime()));
+            role.set("ROLEID", Barcode.ROLE.nextVal())
+                .set("createTime", new java.sql.Timestamp(new Date().getTime()));
             success = role.save();
             setAttr("msg", "角色新增成功!");
         }
@@ -191,7 +193,10 @@ public class ModuleBaseController extends Controller {
      */
     public void insertRolePos() {
         RolePosition role = new RolePosition();
-        role.set("authPosId", UUID.randomUUID().toString()).set("roleId", getPara("roleId")).set("authId", getPara("authId")).set("posId", "0101");
+        role.set("authPosId", UUID.randomUUID().toString())
+            .set("roleId", getPara("roleId"))
+            .set("authId", getPara("authId"))
+            .set("posId", "0101");
         renderJson("success", role.save());
     }
 
@@ -209,7 +214,8 @@ public class ModuleBaseController extends Controller {
                     setAttr("success", false);
                     setAttr("msg", "用户账号已经存在!");
                 } else {
-                    Employee e = Employee.dao.findFristCondition(new String[]{"worknumber"}, account.get("username"));
+                    Employee e = Employee.dao.findFristCondition(new String[]{"worknumber"},
+                                                                 account.get("username"));
 
                     if (e == null) {
                         setAttr("success", false);
@@ -230,7 +236,8 @@ public class ModuleBaseController extends Controller {
                 setAttr("success", false);
                 setAttr("msg", "用户账号已经存在!");
             } else {
-                Employee e = Employee.dao.findFristCondition(new String[]{"worknumber"}, account.get("username"));
+                Employee e = Employee.dao.findFristCondition(new String[]{"worknumber"},
+                                                             account.get("username"));
 
                 if (e == null) {
                     setAttr("success", false);
@@ -269,8 +276,7 @@ public class ModuleBaseController extends Controller {
         //
         // });
 
-        List<Record> list = Authority.dao.findAuthorityData();
-        renderJson(list);
+        renderJson(Authority.dao.findAuthorityData(ControlUtils.getLocale(this)));
     }
 
     /**
@@ -379,7 +385,8 @@ public class ModuleBaseController extends Controller {
      * 獲取本廠
      */
     public void findLocalRegionDepartment() {
-        renderJson(RegionDepartment.dao.getUserRegionDepartment(ControlUtils.getFactoryStepid(this), ""));
+        renderJson(RegionDepartment.dao.getUserRegionDepartment(ControlUtils.getFactoryStepid(this),
+                                                                ""));
     }
 
     /**

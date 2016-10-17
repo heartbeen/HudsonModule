@@ -361,7 +361,7 @@ Ext.define('Deviser.DeviserProject', {
 	initDateTimeCell : function(val, meta, record) {
 		var fcnt = parseInt(record.get('fcnt'));
 		var ecnt = parseInt(record.get('ecnt'));
-		console.info(fcnt);
+
 		var tDate = Ext.Date.format(val, 'Y-m-d H:i');
 		return '<div class = "' + (fcnt ? (ecnt ? 'x-grid-cell-content-red' : 'x-grid-cell-content') : 'x-grid-cell-content-green') + '">'
 				+ (tDate ? tDate : '') + '</div>';
@@ -476,8 +476,8 @@ Ext.define('Deviser.DeviserProject', {
 							id : me.tabpanelId,
 							region : 'center',
 							activeTab : 0,
-							items : [ {
-								xtype : 'moduleportalpanel',
+							items : [ new Portlet.PortalPanel({ 
+								//xtype : 'moduleportalpanel',
 								title : '首页',
 								iconCls : 'house-16',
 								// items : portletItems
@@ -813,7 +813,7 @@ Ext.define('Deviser.DeviserProject', {
 									} ]
 								} ]
 
-							} ]
+							}) ]
 						} ]
 			});
 		}

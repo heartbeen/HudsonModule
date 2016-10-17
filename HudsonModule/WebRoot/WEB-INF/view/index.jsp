@@ -31,12 +31,12 @@
 <link href="ext-gantt/resources/css/sch-gantt-all.css" rel="stylesheet"
 	type="text/css" />
 <script src="ext-gantt/gnt-all-debug.js" type="text/javascript"></script>
-<script src="ext-gantt/sch-lang-zh_${lang }.js" type="text/javascript"></script>
+<script src="ext-gantt/sch-lang-${lang}.js" type="text/javascript"></script>
 
 <script type="text/javascript"
-	src="ext4.2/packages/sys_zh_${lang }.js?${time}"></script>
+	src="ext4.2/packages/sys_${lang}.js?${time}"></script>
 <script type="text/javascript"
-	src="ext4.2/packages/ext-locale-zh_${lang}/ext-locale-zh_${lang}.js"></script>
+	src="ext4.2/packages/ext-locale-${lang}/ext-locale-${lang}.js"></script>
 <!--script type="text/javascript"
 	src="ext4.2/extexcel/export-all.js"></script-->
 
@@ -169,7 +169,7 @@ body {
 		<img id="logo-img" src="images/admin.png?${time }"></img>
 		<div id="login">
 			<span id="login-error"
-				style="visibility:hidden;color:rgb(165, 9, 20);font-weight: bold;font-size: 14px;">
+				style="visibility:hidden;color:#f7626d;font-weight: bold;font-size: 14px;">
 				${error} </span>
 			<div id="login-region"></div>
 		</div>

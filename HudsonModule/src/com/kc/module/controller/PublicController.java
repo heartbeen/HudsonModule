@@ -76,6 +76,7 @@ import com.kc.module.utils.ConstUtils;
 import com.kc.module.utils.ControlUtils;
 import com.kc.module.utils.DataUtils;
 import com.kc.module.utils.DateUtils;
+import com.kc.module.utils.I18n;
 import com.kc.module.utils.StringUtils;
 
 @Before(PublicInterceptorStack.class)
@@ -88,10 +89,7 @@ public class PublicController extends Controller {
         MainProjectExtract mpe = new MainProjectExtract();
         mpe.setController(this);
 
-        Object auth = mpe.extract();
-        String authText = (auth == null ? null : auth + "");
-
-        renderText(authText);
+        renderJson(mpe.extract().toString());
     }
 
     /**
@@ -210,7 +208,8 @@ public class PublicController extends Controller {
     public void moduleMeasureList() {
         int measure = StrKit.notBlank(getPara("measure")) ? getParaToInt("measure") : 0;
 
-        List<Record> list = ModulePart.dao.findMeasureListForModule(getPara("moduleBarcode"), measure);
+        List<Record> list = ModulePart.dao.findMeasureListForModule(getPara("moduleBarcode"),
+                                                                    measure);
         for (Record r : list) {
             r.set("leaf", true);
             r.set("iconCls", "brick-16");
@@ -307,7 +306,8 @@ public class PublicController extends Controller {
         String factory = getPara("factoryId");
         factory = StrKit.isBlank(factory) ? ControlUtils.getFactoryStepid(this) : factory;
 
-        renderJson("department", RegionDepartment.dao.getRegionDepartment(factory, ConstUtils.DEPT_SUB_LAYOUT));
+        renderJson("department",
+                   RegionDepartment.dao.getRegionDepartment(factory, ConstUtils.DEPT_SUB_LAYOUT));
     }
 
     /**
@@ -377,7 +377,7 @@ public class PublicController extends Controller {
      * 获取模块分类列表信息
      */
     public void getSubFunctionList() {
-        renderJson(SubFunction.dao.subFunctionData());
+        renderJson(SubFunction.dao.subFunctionData(ControlUtils.getLocale(this)));
     }
 
     /**
@@ -406,7 +406,8 @@ public class PublicController extends Controller {
      * 获取加工单位工件加工者
      */
     public void moduleProcesser() {
-        renderJson("processer", Employee.dao.getModuleProcesser(ControlUtils.getDeptRegionPosid(this)));
+        renderJson("processer",
+                   Employee.dao.getModuleProcesser(ControlUtils.getDeptRegionPosid(this)));
     }
 
     /**
@@ -414,7 +415,8 @@ public class PublicController extends Controller {
      */
     public void deptModuleCraft() {
         String isAll = getPara("isAll");// 有值时表示为查找所有工艺
-        String step = StrKit.notBlank(isAll) ? ControlUtils.getUserDeptStepId(this) : ControlUtils.getUserTeamStepId(this);
+        String step = StrKit.notBlank(isAll) ? ControlUtils.getUserDeptStepId(this)
+                                            : ControlUtils.getUserTeamStepId(this);
         List<Craft> list = Craft.dao.findDeptModuleCraft(step);
 
         setAttr("success", list.size());
@@ -485,7 +487,9 @@ public class PublicController extends Controller {
             List<Record> workList = new ArrayList<Record>();
             List<Integer> partList = new ArrayList<Integer>();
 
-            int days = DateUtils.getMaxDayOfMonth(StrKit.notBlank(d) ? DateUtils.strToDate(d, DateUtils.YEAR_AND_MONTH) : new Date());
+            int days = DateUtils.getMaxDayOfMonth(StrKit.notBlank(d) ? DateUtils.strToDate(d,
+                                                                                           DateUtils.YEAR_AND_MONTH)
+                                                                    : new Date());
             String tmp = "";
 
             for (int i = 1; i <= days; i++) {
@@ -544,11 +548,26 @@ public class PublicController extends Controller {
         // 是否显示全部排程
         boolean isall = getParaToBoolean("isall");
 
-        Page<Record> partPage = ModulePartList.dao.findProcessPart(moduleResumeId, page, start, limit, pcode, isall);
+        Page<Record> partPage = ModulePartList.dao.findProcessPart(moduleResumeId,
+                                                                   page,
+                                                                   start,
+                                                                   limit,
+                                                                   pcode,
+                                                                   isall);
 
-        List<Record> flowList = ModuleEstSchedule.dao.findPlanProcessFlow(moduleResumeId, page, start, limit, pcode, isall);
+        List<Record> flowList = ModuleEstSchedule.dao.findPlanProcessFlow(moduleResumeId,
+                                                                          page,
+                                                                          start,
+                                                                          limit,
+                                                                          pcode,
+                                                                          isall);
 
-        List<Record> actualList = ModuleProcessResume.dao.findActualProcessFlow(moduleResumeId, page, start, limit, pcode, isall);
+        List<Record> actualList = ModuleProcessResume.dao.findActualProcessFlow(moduleResumeId,
+                                                                                page,
+                                                                                start,
+                                                                                limit,
+                                                                                pcode,
+                                                                                isall);
 
         Map<String, List<Record>> planMap = DataUtils.recordClassific(flowList, "partbarlistcode");
         // Map<String, List<Record>> actualMap =
@@ -579,7 +598,9 @@ public class PublicController extends Controller {
         // String time = DateUtil.dateToStr(new Date(nowTime),
         // DateUtil.DEFAULT_DATE_FORMAT);
         setAttr("nowtime", System.currentTimeMillis());
-        setAttr("parts", ModuleProcessInfo.dao.findCurrentTimePartState(deptId, new Timestamp(nowTime), partState));
+        setAttr("parts", ModuleProcessInfo.dao.findCurrentTimePartState(deptId,
+                                                                        new Timestamp(nowTime),
+                                                                        partState));
 
         renderJson();
     }
@@ -604,11 +625,14 @@ public class PublicController extends Controller {
      * </ol>
      */
     public void queryModulePartDeadLine() {
-        String deptId = StrKit.notBlank(getPara("deptId")) ? getPara("deptId") : ControlUtils.getDeptPosid(this);
+        String deptId = StrKit.notBlank(getPara("deptId")) ? getPara("deptId")
+                                                          : ControlUtils.getDeptPosid(this);
         int query = getParaToInt("query");
         int time = getParaToInt("time");
 
-        List<ModuleProcessInfo> list = ModuleProcessInfo.dao.findModulePartDeadLine(deptId, query, time);
+        List<ModuleProcessInfo> list = ModuleProcessInfo.dao.findModulePartDeadLine(deptId,
+                                                                                    query,
+                                                                                    time);
 
         renderJson(list);
     }
@@ -636,7 +660,8 @@ public class PublicController extends Controller {
             Date now = new Date();
             Date split = DateUtils.strToDate(splitFormat, DateUtils.DEFAULT_DATE_FORMAT);
             if (now.getTime() <= split.getTime()) {
-                startTime = DateUtils.addDateToStr(now, -1, DateUtils.DEFAULT_SHORT_DATE) + " 08:00:00";
+                startTime = DateUtils.addDateToStr(now, -1, DateUtils.DEFAULT_SHORT_DATE)
+                            + " 08:00:00";
             } else {
                 startTime = splitFormat;
             }
@@ -667,7 +692,8 @@ public class PublicController extends Controller {
 
         List<Record> list = DeviceDepart.dao.findMachineRate(deptStepId, startTime, endTime);
         for (Record r : list) {
-            r.set("RATE", ArithUtils.mul(ArithUtils.div(r.getNumber("RATE").longValue(), useTime, 2), 100));
+            r.set("RATE",
+                  ArithUtils.mul(ArithUtils.div(r.getNumber("RATE").longValue(), useTime, 2), 100));
         }
 
         renderJson(list);
@@ -768,7 +794,9 @@ public class PublicController extends Controller {
     }
 
     public void getModuleListByVague() {
-        renderJson(ModuleList.dao.getModuleListByVague(getPara("query"), RegularState.MODULE_RESUME_NEW.getIndex(), getParaToBoolean("isall")));
+        renderJson(ModuleList.dao.getModuleListByVague(getPara("query"),
+                                                       RegularState.MODULE_RESUME_NEW.getIndex(),
+                                                       getParaToBoolean("isall")));
     }
 
     public void getTaskGroupChildAndMember() {
@@ -839,7 +867,10 @@ public class PublicController extends Controller {
      * 按条件查询模具履历
      */
     public void getModuleResumeInfoByCase() {
-        renderJson(ModuleResume.dao.getModuleForResumeCase(getParaToBoolean("chk"), getPara("query"), getPara("states"), "完成"));
+        renderJson(ModuleResume.dao.getModuleForResumeCase(getParaToBoolean("chk"),
+                                                           getPara("query"),
+                                                           getPara("states"),
+                                                           "完成"));
     }
 
     /**
@@ -866,7 +897,9 @@ public class PublicController extends Controller {
     }
 
     public void getFinishOfLastWeek() {
-        renderJson(ModuleResumeRecord.dao.getLastWeekProcessInfo(getPara("stateid"), getPara("typeid") == null ? false : getParaToInt("typeid") > 0));
+        renderJson(ModuleResumeRecord.dao.getLastWeekProcessInfo(getPara("stateid"),
+                                                                 getPara("typeid") == null ? false
+                                                                                          : getParaToInt("typeid") > 0));
     }
 
     public void getWeekLoadReport() {
@@ -878,23 +911,28 @@ public class PublicController extends Controller {
     }
 
     public void getAvaliableRegion() {
-        renderJson(RegionDepartment.dao.getPackageClassifyRegion(getParaToInt("classid"), getParaToInt("isava")));
+        renderJson(RegionDepartment.dao.getPackageClassifyRegion(getParaToInt("classid"),
+                                                                 getParaToInt("isava")));
     }
 
     public void getRegularEstimateSchedule() {
-        renderJson(ModuleEstSchedule.dao.getRegularEstimateSchedule(getPara("partid"), getPara("resumeid")));
+        renderJson(ModuleEstSchedule.dao.getRegularEstimateSchedule(getPara("partid"),
+                                                                    getPara("resumeid")));
     }
 
     public void getActualWorkSchedule() {
-        renderJson(ModuleProcessResume.dao.getActualWorkSchedule(getPara("partid"), getPara("resumeid")));
+        renderJson(ModuleProcessResume.dao.getActualWorkSchedule(getPara("partid"),
+                                                                 getPara("resumeid")));
     }
 
     public void getWorkPartInformation() {
-        renderJson(ModuleProcessInfo.dao.getWorkPartInformation(getPara("partid"), getPara("resumeid")));
+        renderJson(ModuleProcessInfo.dao.getWorkPartInformation(getPara("partid"),
+                                                                getPara("resumeid")));
     }
 
     public void getModuleProcessDetails() {
-        renderJson(ModuleProcessResume.dao.getPartProcessInfo(getPara("partid"), getPara("resumeid")));
+        renderJson(ModuleProcessResume.dao.getPartProcessInfo(getPara("partid"),
+                                                              getPara("resumeid")));
     }
 
     /**
@@ -1039,11 +1077,13 @@ public class PublicController extends Controller {
      * 获得本人所在单位的
      */
     public void getEmployeeRegionDepart() {
-        renderJson("department", RegionDepartment.dao.getRegionDepartment(ControlUtils.getStepId(this), 0));
+        renderJson("department",
+                   RegionDepartment.dao.getRegionDepartment(ControlUtils.getStepId(this), 0));
     }
 
     public void getModuleResumeList() {
-        renderJson(ModuleResumeRecord.dao.getModuleResumeListByResumeId(getPara("resumeid"), getPara("format")));
+        renderJson(ModuleResumeRecord.dao.getModuleResumeListByResumeId(getPara("resumeid"),
+                                                                        getPara("format")));
     }
 
     /**
@@ -1100,5 +1140,12 @@ public class PublicController extends Controller {
      */
     public void exportModuleReport() throws IOException {
         new ExportModuleReport(this).exportExcel();
+    }
+
+    /**
+     * 得到国际化内容
+     */
+    public void getLocaleContent() {
+        renderJson(I18n.getLocaleContent(this));
     }
 }

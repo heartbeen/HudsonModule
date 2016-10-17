@@ -1,6 +1,41 @@
 //Ext.onReady(Fly.init, Ext.Fly);
 Ext.onReady(function() {
 
+	i18n = {
+		content : {},
+
+		init : function() {
+			var me = this;
+			Ext.Ajax.request({
+				url : 'public/getLocaleContent',
+				success : function(resp) {
+					me.content = Ext.JSON.decode(resp.responseText);
+				},
+				error : function() {
+					console.log("国际化读取失败");
+				}
+			});
+		},
+
+		get : function(key) {
+			if (!this.content[key]) {
+				return key;
+			}
+
+			var value = this.content[key].split(/\{\d+?\}/);
+			for (var i = 0; i < value.length; i++) {
+				if (!arguments[i + 1])
+					break;
+				value[i] += arguments[i + 1];
+			}
+
+			return value.join("");
+
+		}
+	};
+
+	i18n.init();
+
 	Ext.define('LoginSystem', {
 		extend : 'Ext.container.Container',
 
@@ -29,14 +64,21 @@ Ext.onReady(function() {
 
 						data : [ {
 							name : '简体中文',
-							locale : 'CN'
+							locale : 'zh_CN'
 
 						}, {
 							name : '繁體中文',
-							locale : 'TW'
+							locale : 'zh_TW'
+						}, {
+							name : 'English(US)',
+							locale : 'en_US'
 						} ]
 					}),
-					value : Cookies.getCookie('lang') == 'TW' ? '繁体中文' : localLang == 'TW' ? '繁體中文' : '简体中文',
+					value : Cookies.getCookie('lang_name'),// == 'zh_TW' ?
+					// '繁体中文' :
+					// localLang ==
+					// 'zh_TW' ? '繁體中文'
+					// : '简体中文',
 					editable : false,
 					queryMode : 'local',
 					typeAhead : true,
@@ -45,6 +87,7 @@ Ext.onReady(function() {
 							// 标签切换时，保存相应兄弟厂的PODID
 
 							Cookies.setCookie("lang", records[0].data.locale, 23);
+							Cookies.setCookie("lang_name", records[0].data.name, 23);
 							window.location.reload();
 						}
 					},
@@ -75,8 +118,9 @@ Ext.onReady(function() {
 					}
 				}, {
 					xtype : 'button',
+					style : 'margin-top:8px',
 					iconCls : 'user_go-16',
-					width : 60,
+					width : 150,
 					text : Login.signIn,
 					scope : me,
 					handler : me.onClickLogin
@@ -190,12 +234,13 @@ Ext.onReady(function() {
 			document.getElementById('login-error').innerText = info;
 			document.getElementById('login-error').style.visibility = 'visible';
 		},
+
 		handShake : function() {
 			Ext.Ajax.request({
 				url : 'public/handShake',
 				success : function(resp) {
 					var backJson = Ext.JSON.decode(resp.responseText);
-					console.info(backJson);
+
 					if (!backJson.success) {
 						window.location = '';
 					}
@@ -207,4 +252,5 @@ Ext.onReady(function() {
 
 	var login = new LoginSystem();
 	login.render('login-region');
+
 });

@@ -54,6 +54,8 @@ public class DesignResumeRecord extends ModelFinal<DesignResumeRecord> {
      */
     public List<DesignResumeRecord> getProcessModuleInfo(boolean isall, String empid) {
         StringBuilder builder = new StringBuilder();
+        
+        System.out.println(empid);
 
         builder.append("SELECT DRR.ID,ML.MODULEBARCODE,ML.MODULECODE,ML.GUESTID,ML.GUESTCODE,FY.SHORTNAME, ");
         builder.append("ML.MODULECLASS,ML.PRODUCTNAME,ML.WORKPRESSURE,ML.UNITEXTRAC,DRR.DEVISER,(SELECT NAME FROM REGION_DEPART WHERE ID = DRR.GROUPID) AS GROUPNAME, ");

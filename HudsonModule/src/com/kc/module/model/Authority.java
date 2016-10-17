@@ -22,8 +22,26 @@ public class Authority extends ModelFinal<Authority> {
      * 
      * @return
      */
-    public List<Record> findAuthorityData() {
-        return Db.find("SELECT I.AUTHID,I.AUTHNAME,I.USERPATHNAME,I.AUTHTYPE,I.MODULEID,S.TEXT FROM ITEM_AUTHORITY I left join SUB_FUNCTION S on I.MODULEID=S.ID  ORDER BY AUTHID");
+    public List<Record> findAuthorityData(String loacle) {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT I.AUTHID, ");
+        sql.append("       I.AUTHNAME, ");
+        sql.append("       nvl(slc.lang_value, I.USERPATHNAME) USERPATHNAME, ");
+        sql.append("       I.AUTHTYPE, ");
+        sql.append("       I.MODULEID, ");
+        sql.append("       nvl(sl.lang_value, s.text) text ");
+        sql.append("  FROM ITEM_AUTHORITY I ");
+        sql.append("  left join SUB_FUNCTION S ");
+        sql.append("    on I.MODULEID = S.ID ");
+        sql.append("  left join sys_locale_content_t slc ");
+        sql.append("    on slc.lang_code = i.lang_code ");
+        sql.append("   and slc.locale_key = ? ");
+        sql.append("  left join sys_locale_content_t sl ");
+        sql.append("    on sl.lang_code = s.lang_code ");
+        sql.append("   and sl.locale_key = ? ");
+        sql.append(" ORDER BY AUTHID ");
+        return Db.find(sql.toString(), loacle, loacle);
     }
 
     /**

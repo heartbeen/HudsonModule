@@ -31,6 +31,7 @@ import com.kc.module.controller.ProjectController;
 import com.kc.module.controller.PublicController;
 import com.kc.module.controller.ReportController;
 import com.kc.module.controller.SystemController;
+import com.kc.module.controller.rest.SysLocaleContentController;
 import com.kc.module.interceptor.AuthInterceptor;
 import com.kc.module.model.Account;
 import com.kc.module.model.AccountLogin;
@@ -100,9 +101,12 @@ import com.kc.module.model.TaskInfo;
 import com.kc.module.model.TaskStruct;
 import com.kc.module.model.TaskStuff;
 import com.kc.module.model.WorkItem;
+import com.kc.module.model.sys.SysLocaleContent;
+import com.kc.module.model.sys.SysLocaleTag;
 import com.kc.module.plugin.SqlInXmlPlugin;
 import com.kc.module.utils.ConstUtils;
 import com.kc.module.utils.DataUtils;
+import com.kc.module.utils.I18n;
 
 public class ModuleConfig extends JFinalConfig {
 
@@ -123,6 +127,9 @@ public class ModuleConfig extends JFinalConfig {
         if (isOracle) {
             ConstUtils.initConst();
         }
+
+        // 启动时初化国际化数据
+        I18n.cacheLocaleContent();
     }
 
     /**
@@ -147,7 +154,9 @@ public class ModuleConfig extends JFinalConfig {
             throw new RuntimeException("数据库配置文件出错");
         }
 
-        DruidPlugin dp = new DruidPlugin(properties.getProperty("jdbcUrl"), properties.getProperty("user"), properties.getProperty("password"));
+        DruidPlugin dp = new DruidPlugin(properties.getProperty("jdbcUrl"),
+                                         properties.getProperty("user"),
+                                         properties.getProperty("password"));
 
         ActiveRecordPlugin arp = new ActiveRecordPlugin(dp);
 
@@ -301,6 +310,9 @@ public class ModuleConfig extends JFinalConfig {
         // 设计制程集合清单表
         arp.addMapping("DS_CRAFT_LIST", DesignCraftList.class);
 
+        // sys
+        arp.addMapping("sys_locale_tag_t", "lang_code", SysLocaleTag.class);
+        arp.addMapping("SYS_LOCALE_CONTENT_T", SysLocaleContent.class);
         // TODO 加载数据库表结构
         me.add(arp);
     }
@@ -330,6 +342,10 @@ public class ModuleConfig extends JFinalConfig {
         me.add("/module/devise", DeviseController.class);
         // 用于设计模块共享信息
         me.add("/devise/share", DeviseShareController.class);
+
+        // rest
+        me.add("/locale/content", SysLocaleContentController.class);
+
     }
     //
     // public boolean waitStart(){
