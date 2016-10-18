@@ -31,7 +31,6 @@ import com.kc.module.controller.ProjectController;
 import com.kc.module.controller.PublicController;
 import com.kc.module.controller.ReportController;
 import com.kc.module.controller.SystemController;
-import com.kc.module.controller.rest.SysLocaleContentController;
 import com.kc.module.interceptor.AuthInterceptor;
 import com.kc.module.model.Account;
 import com.kc.module.model.AccountLogin;
@@ -342,10 +341,6 @@ public class ModuleConfig extends JFinalConfig {
         me.add("/module/devise", DeviseController.class);
         // 用于设计模块共享信息
         me.add("/devise/share", DeviseShareController.class);
-
-        // rest
-        me.add("/locale/content", SysLocaleContentController.class);
-
     }
     //
     // public boolean waitStart(){
