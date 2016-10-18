@@ -341,6 +341,10 @@ public class ModuleConfig extends JFinalConfig {
         me.add("/module/devise", DeviseController.class);
         // 用于设计模块共享信息
         me.add("/devise/share", DeviseShareController.class);
+
+        // rest
+        //me.add("/locale/content", SysLocaleContentController.class);
+
     }
     //
     // public boolean waitStart(){
