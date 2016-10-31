@@ -593,30 +593,41 @@ public class DataUtils {
      */
     public static <E extends ModelFinal<E>> Map<Record, List<E>> modelTwoLayout(List<E> list, String mainField, String... correlation) {
         Map<Record, List<E>> partMap = new LinkedHashMap<Record, List<E>>();
-        Record record = new Record();
-        List<E> mpList;
+
+        Map<Object, Record> swt = new HashMap<Object, Record>();
 
         for (E mp : list) {
-            if (!mp.get(mainField).equals(record.get(mainField))) {
-                record = new Record();
+            Object partbarcode = mp.get(mainField);
+
+            if (partbarcode == null) {
+                continue;
+            }
+
+            List<E> mplist = null;
+
+            if (!swt.containsKey(partbarcode)) {
+                Record record = new Record();
 
                 for (String field : correlation) {
                     record.set(field, mp.get(field));
                 }
 
-                mpList = new ArrayList<E>();
+                mplist = new ArrayList<E>();
+
+                swt.put(partbarcode, record);
+
+                partMap.put(record, mplist);
 
             } else {
-                mpList = partMap.get(record);
+                mplist = partMap.get(swt.get(partbarcode));
             }
-            // 子节移除
+
+            // 移除列
             mp.remove(correlation);
-
-            // mp.put("leaf", true);
-
-            mpList.add(mp);
-            partMap.put(record, mpList);
+            // 新增子项
+            mplist.add(mp);
         }
+
         return partMap;
     }
 
@@ -1268,7 +1279,7 @@ public class DataUtils {
 
         return arr;
     }
-    
+
     /**
      * 合并两个List数组
      * 
@@ -1299,9 +1310,7 @@ public class DataUtils {
      * @param valueField
      * @return
      */
-    public static <T extends ModelFinal<T>> Map<String, String> modelToMap(List<T> list,
-                                                                           String keyField,
-                                                                           String valueField) {
+    public static <T extends ModelFinal<T>> Map<String, String> modelToMap(List<T> list, String keyField, String valueField) {
         Map<String, String> map = new HashMap<String, String>();
 
         for (int i = 0; i < list.size(); i++) {

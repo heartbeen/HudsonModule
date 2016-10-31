@@ -190,7 +190,7 @@ public class PublicController extends Controller {
         List<ModulePart> list = ModulePart.dao.moduleResumePart(moduleResumeId);
 
         Map<Record, List<ModulePart>> map = DataUtils.modelTwoLayout(list,
-                                                                     "PARTCODE",
+                                                                     "PARTBARCODE",
                                                                      "PARTCODE",
                                                                      "PARTBARCODE",
                                                                      "MODULERESUMEID",

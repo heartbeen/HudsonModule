@@ -17,7 +17,7 @@ public class ModulePartInfoExtract extends ExtractDao {
         ModulePartMessageForm mpmf = new ModulePartMessageForm();
         try {
             // 是否统计标准件
-            boolean chk = this.getController().getParaToBoolean("chk");
+            // boolean chk = this.getController().getParaToBoolean("chk");
             boolean init = this.getController().getParaToBoolean("init");
             // 模具唯一编号
             String modulebarcode = this.getController().getPara("modulebarcode");
@@ -43,10 +43,10 @@ public class ModulePartInfoExtract extends ExtractDao {
             builder.append("LEFT JOIN FACTORY FY ON ML.GUESTID = FY.ID ");
 
             if (init) {
-                builder.append("WHERE MRR.MODULEBARCODE = ? ORDER BY MRR.STARTTIME DESC");
+                builder.append("WHERE MRR.MODULEBARCODE = ? ORDER BY MRR.RESUMETIME DESC");
                 columnValue = modulebarcode;
             } else {
-                builder.append("WHERE MRR.ID = ? ORDER BY MRR.STARTTIME DESC");
+                builder.append("WHERE MRR.ID = ? ORDER BY MRR.RESUMETIME DESC");
                 columnValue = resumeid;
             }
 
@@ -63,9 +63,14 @@ public class ModulePartInfoExtract extends ExtractDao {
             // 模具是否处于加工状态的履历ID号
             String mrid = getRecordStringValue(resumeList, selIndex, "MRID");
 
+            String selectId = null;
+
             builder = new StringBuilder();
 
             if (!StringUtils.isEmpty(mrid)) {
+
+                selectId = mrid;
+
                 builder.append("SELECT * FROM (SELECT MPI.ID AS MID,MPI.ISFIXED,MPI.ISMAJOR,MPF.ID AS FID,MPL.PARTLISTCODE,MPI.PARTBARLISTCODE,MPI.MODULERESUMEID, MP.CNAMES AS PARTNAME, NVL(PO.OUTGUESTNAME,RD.NAME) AS REGIONNAME ");
                 builder.append(", MPS.NAME AS STATENAME, DD.BATCHNO, NVL(PO.OUTCRAFTNAME, MC.CRAFTNAME) AS CRAFTNAME, NVL(PO.OUTCRAFTCODE, MC.CRAFTCODE) AS CRAFTCODE , MPI.ACTIONTIME, ");
                 builder.append("TO_CHAR(PO.PLANBACKTIME,'yyyy/mm/dd') AS PLANBACKTIME, (SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM MD_EST_SCHEDULE WHERE MODULERESUMEID = MPI.MODULERESUMEID ");
@@ -82,14 +87,16 @@ public class ModulePartInfoExtract extends ExtractDao {
                 builder.append(" WHERE MPI.MODULERESUMEID = ? AND MPL.ISENABLE = ?)");
 
                 // 如果TRUE为显示标准件
-                if (!chk) {
-                    builder.append("WHERE ECOUNT > 0");
-                }
+                // if (!chk) {
+                // builder.append("WHERE ECOUNT > 0");
+                // }
 
                 builder.append(" ORDER BY ECOUNT DESC,PARTLISTCODE");
 
                 queryList = Db.find(builder.toString(), resumeid, "0");
             } else {
+
+                selectId = resumeid;
 
                 builder.append("SELECT MRR.ID AS MODULERESUMEID, MRR.FINISHTIME, MPS.PARTBARLISTCODE, MPL.PARTLISTCODE, '/' AS BATCHNO ");
                 builder.append("    , '/' AS STATENAME, '/' AS REGIONNAME, '/' AS CRAFTNAME, '' AS CRAFTCODE, '/' AS EMPNAME ");
@@ -112,7 +119,7 @@ public class ModulePartInfoExtract extends ExtractDao {
                 queryList = Db.find(builder.toString(), resumeid);
             }
 
-            mpmf.setSelIndex(resumeid);
+            mpmf.setSelIndex(selectId);
             mpmf.setResumeList(resumeList);
             mpmf.setQueryList(queryList);
             mpmf.setSuccess(true);

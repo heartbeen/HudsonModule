@@ -38,7 +38,7 @@ public class ModulePart extends ModelFinal<ModulePart> {
         sql.append("    MP.MODULERESUMEID ,MP.PARTBARCODE ,MPA.PARTCODE ,                     ");
         sql.append("    MPA.CNAMES ,MP.PARTBARLISTCODE ,MP.PARTLISTCODE ,                     ");
         sql.append("    MPS.NAME,MPA.QUANTITY , 'l',                                          ");
-        sql.append("( SELECT CASE  WHEN COUNT(ID)>0 THEN 'craft-schedule-exits' ELSE ");
+        sql.append("(SELECT CASE  WHEN COUNT(ID) > 0 THEN 'craft-schedule-exits' ELSE ");
         sql.append("'craft-schedule-noexits' END FROM MD_EST_SCHEDULE WHERE PARTID=MP.PARTBARCODE AND MODULERESUMEID = ? ) cls");
         sql.append(" FROM ( SELECT                                                            ");
         sql.append("            MI.MODULERESUMEID ,MI.PARTBARLISTCODE ,                       ");
