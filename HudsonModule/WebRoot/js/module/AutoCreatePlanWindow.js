@@ -8,8 +8,10 @@ Ext.define('Module.AutoCreatePlanWindow', {
 		type : 'fit'
 	},
 
-	partBarCodes : [],
-	partListBarcodes : [],
+	// 勾选的节点
+	checkNodes : [],
+	// 选中的节点
+	selNode : null,
 
 	modal : true,
 	taskStore : null,
@@ -18,6 +20,7 @@ Ext.define('Module.AutoCreatePlanWindow', {
 		var me = this;
 
 		me.store = Ext.create('Ext.data.Store', {
+			id : 'module-schedule-set-list-store',
 			fields : [ 'craftid', 'craftname', 'duration', 'interval', 'intro' ],
 			proxy : {
 				type : 'memory'
@@ -25,6 +28,15 @@ Ext.define('Module.AutoCreatePlanWindow', {
 		});
 
 		Ext.applyIf(me, {
+			listeners : {
+				destroy : function(win) {
+					for ( var x in me.checkNodes) {
+						var tNode = me.checkNodes[x];
+
+						tNode.set('checked', false);
+					}
+				}
+			},
 			items : [ {
 				xtype : 'gridpanel',
 				border : false,
@@ -34,11 +46,10 @@ Ext.define('Module.AutoCreatePlanWindow', {
 				plugins : [ Ext.create('Ext.grid.plugin.CellEditing', {
 					clicksToEdit : 1
 				}) ],
-				selModel : {
-					selType : 'checkboxmodel',
-					mode : 'SIMPLE'
-				},
+
 				columns : [ {
+					xtype : 'rownumberer'
+				}, {
 					xtype : 'gridcolumn',
 					dataIndex : 'craftname',
 					text : '工艺'
@@ -57,7 +68,7 @@ Ext.define('Module.AutoCreatePlanWindow', {
 					text : '间隔时间',
 					field : {
 						xtype : 'numberfield',
-						minValue : 1
+						minValue : 0
 					}
 				}, {
 					xtype : 'gridcolumn',
@@ -80,29 +91,12 @@ Ext.define('Module.AutoCreatePlanWindow', {
 					xtype : 'toolbar',
 					dock : 'top',
 					items : [ {
-						iconCls : 'gtk-delete-16',
-						text : '删除工序',
-						handler : function() {
-							var grid = this.up('gridpanel');
-							var selRows = grid.getSelectionModel().getSelection();
-							if (!selRows.length) {
-								showInfo('未选中任何工序');
-								return;
-							}
-
-							Ext.Msg.confirm('提醒', '是否确定要删除工序?', function(y) {
-								if (y == 'yes') {
-									grid.getStore().remove(selRows);
-								}
-							});
-						}
-					}, '-', {
 						xtype : 'datefield',
 						id : 'auto-create-plan-startdate-id',
 						fieldLabel : '开始日期',
 						labelWidth : 60,
 						format : 'Y-m-d',
-						minValue : new Date(),
+						// minValue : new Date(),
 						value : new Date()
 					}, {
 						xtype : 'timefield',
@@ -129,7 +123,7 @@ Ext.define('Module.AutoCreatePlanWindow', {
 					text : '产生排程',
 					iconCls : 'gtk-apply-16',
 					scope : me,
-					handler : me.onAutoCreate
+					handler : me.createCraftPlan
 				}, {
 					xtype : 'button',
 					id : 'cancel-craft-plan-button',
@@ -151,125 +145,85 @@ Ext.define('Module.AutoCreatePlanWindow', {
 
 		store.removeAt(rowIndex);
 		grid.refresh();
-
-		// Ext.MessageBox.show({
-		// title : '排程',
-		// msg : '你确定要删除->' + store.getAt(rowIndex).data.craftname + " 这个工艺吗?",
-		// buttons : Ext.MessageBox.YESNO,
-		// buttonText : {
-		// yes : "確定",
-		// no : "取消"
-		// },
-		// fn : function(buttonId) {
-		// if (buttonId == 'yes') {
-		// store.removeAt(rowIndex);
-		// grid.refresh();
-		// }
-		// }
-		// });
-	},
-
-	onAutoCreate : function() {
-		var me = this;
-
-		me.createCraftPlan();
-
-		// App.Progress('派车申请单提交中,请稍候...', '提交派车申请单',
-		// 'plan-delete-actioncolumn');
-		// /App.ProgressHide();
-
-		// Ext.MessageBox.show({
-		// title : '排程',
-		// msg : '你确定要删除->' + me.store.getAt(rowIndex).data.craftName + "
-		// 这个工艺吗?",
-		// buttons : Ext.MessageBox.YESNO,
-		// buttonText : {
-		// yes : "確定",
-		// no : "取消"
-		// },
-		// fn : function(buttonId) {
-		// if (buttonId == 'yes') {
-		// me.createCraftPlan();
-		// } else {
-		// return;
-		// }
-		// }
-		// });
 	},
 
 	/**
 	 * 建排程方法
 	 */
 	createCraftPlan : function() {
-
+		// 获取主窗口
 		var me = this;
-		console.info(this);
 
-		var craftPlanList = {
-			mainPart : [],
-			partList : [],
-			planIds : []
-		};
+		var setRows = Ext.getStore('module-schedule-set-list-store').getRange();
+		if (!setRows.length) {
+			showError('排程集合没有任何工艺信息');
+			return;
+		}
 
-		var tmp = me.title;
+		var stime = Ext.getCmp('auto-create-plan-starttime-id').getValue();
+		var sdate = Ext.getCmp('auto-create-plan-startdate-id').getValue();
 
-		me.setTitle('<span style="color:green;">自动生成排程中,请稍候...</span>');
+		var datetime = Ext.Date.format(sdate, 'Y-m-d') + " " + Ext.Date.format(stime, 'h:i:s');
 
-		var createButton = Ext.getCmp('create-craft-plan-button');
-		var cancelButton = Ext.getCmp('cancel-craft-plan-button');
-		createButton.setDisabled(true);
-		cancelButton.setDisabled(true);
-		me.getAutoCraftPlanObject(craftPlanList);
-		me.getNeedOldCraftPlanId(craftPlanList.planIds);
+		var craftSet = [], checkpart = [];
+		for ( var x in setRows) {
+			craftSet.push(setRows[x].getData());
+		}
+
+		for ( var x in me.checkNodes) {
+			var childNode = me.checkNodes[x];
+			checkpart.push(childNode.get('partbarlistcode'));
+		}
+
+		App.Progress('正在复制中...', '排程复制');
 
 		Ext.Ajax.request({
 			url : 'module/schedule/autoCraftPlan',
 			params : {
-				plan : Ext.JSON.encode(craftPlanList)
-
+				seldate : datetime,
+				setlist : Ext.JSON.encode(craftSet),
+				quotes : Ext.JSON.encode(checkpart),
+				selpart : me.selNode.get('partbarlistcode')
 			},
 			success : function(response) {
 				var res = JSON.parse(response.responseText);
+				App.ProgressHide();
 
 				App.InterPath(res, function() {
 					if (res.success) {
+						for ( var x in me.checkNodes) {
+							var tNode = me.checkNodes[x];
 
-						// 设置工艺排程ID
-						for ( var i in me.tasks) {
-							me.tasks[i].data.id = res.planId[i];
-							me.tasks[i].data.remark = me.tasks[i].data.intro;
+							tNode.set('checked', false);
+							tNode.set('cls', 'craft-schedule-exits');
 						}
 
-						me.taskStore.loadData(me.tasks);
+						if (res.gantt.length) {
+							for ( var x in res.gantt) {
+								res.gantt[x].Name = res.gantt[x].name;
+								res.gantt[x].PercentDone = res.gantt[x].percentDone;
 
-						me.parentPanel.taskGantt = [];// 一定要清空
+								res.gantt[x].StartDate = res.gantt[x].startDate;
+								res.gantt[x].EndDate = res.gantt[x].endDate;
 
-						// 标记工件已安排排程
-						me.parentPanel.selectPartRecord.set('cls', 'craft-schedule-exits');
+								res.gantt[x].Duration = res.gantt[x].duration;
+								res.gantt[x].DurationUnit = res.gantt[x].durationUnit;
+							}
 
-						// 生成之后取消工件的选择
-						for ( var i in me.selectParts) {
-							me.selectParts[i].set("checked", false);
+							me.taskStore.loadData(res.gantt);
 						}
 
-						me.destroy();
+						me.close();
 
+						showSuccess(res.msg);
 					} else {
-						Fly.msg('错误', "<span style='color:red;'>" + res.msg + "</span>");
-						me.setTitle(tmp);
-
-						createButton.setDisabled(false);
-						cancelButton.setDisabled(false);
+						showError(res.msg);
 					}
-
 				});
-
 			},
-			failure : function(response) {
-				App.Error(response);
-				me.setTitle(tmp);
-				createButton.setDisabled(false);
-				cancelButton.setDisabled(false);
+			failure : function(x, y, z) {
+				App.ProgressHide();
+				showError('连接服务器失败');
 			}
 		});
 
@@ -298,7 +252,7 @@ Ext.define('Module.AutoCreatePlanWindow', {
 		var startTime = App.getRawValue('auto-create-plan-startdate-id') + ' ' + App.getRawValue('auto-create-plan-starttime-id');
 		var endTime;
 		var duration;
-		var intervalTime;
+		var intervalTime = 0;
 		var count = me.store.getCount();
 		var index = 0;
 		var tmp = "";

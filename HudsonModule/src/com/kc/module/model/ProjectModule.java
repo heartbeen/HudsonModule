@@ -39,6 +39,8 @@ public class ProjectModule extends ModelFinal<ProjectModule> {
      * @return
      */
     public List<ProjectModule> findModule(Object roleid, String locale) {
+        System.out.println(roleid);
+        System.out.println(locale);
         return find(SqlManager.sql(sqlKey("findmodule")), roleid, roleid, locale);
     }
 

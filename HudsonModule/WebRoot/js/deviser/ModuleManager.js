@@ -2001,6 +2001,7 @@ Ext.define('AppendModuleInfo', {
 
 Ext.define('Deviser.ModuleManager', {
 	extend : 'Ext.panel.Panel',
+	requires : [ 'Deviser.ModuleDeviseInfo' ],
 	layout : {
 		type : 'border'
 	},
@@ -2027,7 +2028,7 @@ Ext.define('Deviser.ModuleManager', {
 			overflow : 'visible'
 		},
 		items : [ {
-			text : '修改模具',
+			text : '修改模具信息',
 			iconCls : 'pencil-16',
 			handler : function() {
 				var data = this.up('menu').record.getData();
@@ -2068,7 +2069,7 @@ Ext.define('Deviser.ModuleManager', {
 		// }
 		// },
 		'-', {
-			text : '产品管理',
+			text : '产品信息管理',
 			iconCls : 'plugin_add-16',
 			handler : function() {
 				var data = this.up('menu').record.getData();
@@ -2077,7 +2078,7 @@ Ext.define('Deviser.ModuleManager', {
 				}).show();
 			}
 		}, '-', {
-			text : '管理计划',
+			text : '管理排程计划',
 			iconCls : 'date_add-16',
 			handler : function() {
 				var data = this.up('menu').record.getData();
@@ -2087,13 +2088,27 @@ Ext.define('Deviser.ModuleManager', {
 				}).show();
 			}
 		}, '-', {
-			text : '金型日程',
+			text : '金型日程管理',
 			iconCls : 'clock-16',
 			handler : function() {
 				var data = this.up('menu').record.getData();
 				new EditModulePlan({
 					title : data.guestcode + '金型日程' + (data.modulecode ? '(' + data.modulecode + ')' : ''),
 					modulebarcode : data.modulebarcode
+				}).show();
+			}
+		}, '-', {
+			text : '查看设计履历',
+			iconCls : 'pictures-16',
+			handler : function() {
+				var data = this.up('menu').record.getData();
+				var gcode = data.guestcode;
+				var dimension = Monitor.ratioRect(0.67);
+				new Deviser.ModuleDeviseInfo({
+					modulebarcode : data.modulebarcode,
+					width : dimension.x,
+					height : dimension.y,
+					title : (gcode ? gcode : '') + '模具设计详情'
 				}).show();
 			}
 		} ]

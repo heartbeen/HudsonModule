@@ -3,7 +3,9 @@
 	<!-- 得到用户所对应的模块 -->
 	<sql id="findModule" database="oracledialect">
 		select nvl(loc.lang_value,pm.project_name) as name, pm.*
-		  from (SELECT lang_code,
+		  from (SELECT 
+		               ID AS PROID,
+		               lang_code,
 		               name as project_name,
 		               ICONCLS,
 		               MODULEDEFINE,
@@ -27,7 +29,7 @@
 		                    ON SP.ID = S.PROJECTID)) pm
 		  left join SYS_LOCALE_CONTENT_T loc
 		    on loc.lang_code = pm.lang_code
-		 where loc.locale_key = ?
+		 where loc.locale_key = ? ORDER BY pm.PROID
 	</sql>
 
 	<!-- 得到用户所对应的模块 -->

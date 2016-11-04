@@ -126,9 +126,9 @@ Ext.define('Module.ShowEstimateLoad', {
 			url : 'public/getResumeWorkLoad',
 			method : 'POST',
 			params : {
-				astateid : MSConfig.partStart,
-				fstateid : MSConfig.partFinish,
-				doall : MSConfig.craftAll,
+				astateid : '20201',
+				fstateid : '["20209","20210"]',
+				doall : '11216',
 				classid : 1,
 				day : params.day,
 				isall : params.isall,
@@ -635,7 +635,7 @@ Ext.define('ModuleScheduleCrafts', {
 			}
 
 			Ext.Ajax.request({
-				url : 'module/schedule/addModuleCraftClassify?flag=0',
+				url : 'module/schedule/addModuleCraftClassify?flag=1',
 				params : {
 					craftset : craftArr.join(',')
 				},
@@ -678,7 +678,7 @@ Ext.define('ModuleScheduleCrafts', {
 				fields : [ 'id', 'craftname', 'mccid', 'craftcode', 'checked' ],
 				autoLoad : true,
 				proxy : {
-					url : 'public/getScheduleCrafts?classid=0',
+					url : 'public/getScheduleCrafts?classid=1',
 					type : 'ajax',
 					reader : {
 						type : 'json'
@@ -715,13 +715,29 @@ Ext.define('Module.ModulePartPlan', {
 	layout : {
 		type : 'border'
 	},
-	partFields : [ "moduleResumeId", "partBarCode", "name", "moduleresumeid", "partbarlistcode", "partbarcode", "partcode", "text", "cnames" ],
-	moduleResumeId : '',// 模具的加工履历ID
-	partBarCode : '',// 工件Id
-	partListBarcodes : '',
-	isMainPart : true,// 工件是否为汇总工件
+	partFields : [ "partbarcode", "moduleresumeid", "partbarlistcode", "partcode", "partlistcode", "text", "cnames" ],
+
+	editBtnText : '编辑',
+	// 缓存选择的零件记录
+	selectRecord : null,
 	isNewPredictCraft : false,// 是否不新的预设工艺集合
 	taskGantt : [],// 用来存放选中工件的工艺排程
+	consult : { // 复制排程参考资料
+		// 选择模具番号
+		modulecode : null,
+		// 模具履历ID
+		resumeid : null,
+		// 选择的零件或者部件号
+		partcode : null,
+		// 零件或者部件唯一号
+		partbarcode : null,
+		// 零件还是部件
+		ismain : true,
+		// 设置的零件唯一号
+		setbarcode : null,
+		// 设定的模具履历
+		setresumeid : null
+	},
 
 	initComponent : function() {
 		var me = this;
@@ -732,8 +748,9 @@ Ext.define('Module.ModulePartPlan', {
 			flex : 1.3,
 			rowHeight : 20,
 			taskStore : Ext.create("Gnt.data.TaskStore", {
+				// model : 'Gnt.model.Task',
 				model : 'ModulePartScheduleModel',
-				autoLoad : false,
+				autoLoad : true,
 				proxy : {
 					type : 'ajax',
 					url : '',
@@ -744,7 +761,8 @@ Ext.define('Module.ModulePartPlan', {
 				rootVisible : false
 			}),
 			dependencyStore : Ext.create("Gnt.data.DependencyStore", {
-				autoLoad : false,
+				// model : 'Gnt.model.Dependency',
+				autoLoad : true,
 				proxy : {
 					type : 'memory',
 				}
@@ -828,212 +846,304 @@ Ext.define('Module.ModulePartPlan', {
 				} ]
 			},
 
-			items : [
-					{
-						xtype : 'panel',
-						region : 'west',
-						split : true,
-						width : 310,
-						layout : {
-							type : 'border'
+			items : [ {
+				xtype : 'panel',
+				region : 'west',
+				split : true,
+				width : 310,
+				layout : {
+					type : 'border'
+				},
+				collapsed : false,
+				collapsible : true,
+				title : '模具工号',
+				bodyPadding : 3,
+				items : [ {
+					id : 'grid-schedule-module-info',
+					xtype : 'gridpanel',
+					region : 'center',
+					flex : 1,
+					hideHeaders : true,
+					forceFit : true,
+					selectRecord : null,
+					viewConfig : {
+						emptyText : '<h1 style="margin:10px">查询不到模具工号</h1>',
+					},
+					selType : 'checkboxmodel',
+					store : Ext.create('Ext.data.Store', {
+						autoLoad : true,
+						fields : [ "endtime", "starttime", "modulebarcode", 'modulecode', "guestcode", "resumename", "resumestate", "text", "id" ],
+						proxy : {
+							url : '',
+							type : 'ajax',
+							reader : {
+								type : 'json',
+								root : 'children'
+							}
 						},
-						collapsed : false,
-						collapsible : true,
-						title : '模具工号',
-						bodyPadding : 3,
-						items : [
-								{
-									id : 'grid-schedule-module-info',
-									xtype : 'gridpanel',
-									region : 'center',
-									flex : 1,
-									hideHeaders : true,
-									forceFit : true,
-									selectRecord : null,
-									viewConfig : {
-										emptyText : '<h1 style="margin:10px">查询不到模具工号</h1>',
-									},
-									selType : 'checkboxmodel',
-									store : Ext.create('Ext.data.Store', {
-										autoLoad : false,
-										fields : [ "endtime", "starttime", "modulebarcode", 'modulecode', "guestcode", "resumename", "resumestate",
-												"text", "id" ],
-										proxy : {
-											url : '',
-											type : 'ajax',
-											reader : {
-												type : 'json',
-												root : 'children'
-											}
-										},
-										listeners : {
-											load : function() {
-												me.gantt.setTitle('排工单');
-												var partStore = Ext.getStore('module-part-plan-tree-store-id');
-												partStore.load([]);
+						listeners : {
+							load : function() {
+								me.gantt.setTitle('排工单');
+								// 将选择的零件信息清空
+								me.selectRecord = null;
 
-												me.isMainPart = false;
+								var partStore = Ext.getStore('module-part-plan-tree-store-id');
+								partStore.load([]);
 
-											}
-										}
-									}),
-									columns : [ {
-										xtype : 'gridcolumn',
-										dataIndex : 'modulecode',
-										renderer : function(val, meta, record) {
-											var _resumename = record.get('resumename');
-											var _guestcode = record.get('guestcode');
-											return '<b>' + val + (_guestcode ? ('/<font color = blue>' + _guestcode + '</font>') : '')
-													+ "<font color = red>[" + (!_resumename ? '完成' : _resumename) + ']</font></b>';
-										}
-									} ],
-									dockedItems : [ {
-										xtype : 'toolbar',
-										items : [ {
-											id : 'mpp-chk-by-guest',
-											xtype : 'checkbox',
-											boxLabel : '依番号'
-										}, ''
-										// ,
-										// Ext.create('Module.ModuleFindTextField',
-										// {
-										// queryLength : 2,
-										// url : 'public/module?isResume=false'
-										// })
-										, {
-											xtype : 'textfield',
-											emptyText : '请输入模具号',
-											isTxt : true,
-											listeners : {
-												change : me.onResumeModule
-											}
-										}, {
-											text : '快速查询',
-											iconCls : 'lightning-16',
-											menu : Ext.create("Ext.menu.Menu", {
-												items : [ {
-													text : '新增模具',
-													// isNew : true,
-													isTxt : false,
-													states : "['20401']",
-													parent : me,
-													iconCls : 'cog_add-16',
-													handler : me.onResumeModule
-												}, {
-													text : '修模设变',
-													isTxt : false,
-													// isNew : false,
-													states : "['20402','20403']",
-													parent : me,
-													iconCls : 'cog_edit-16',
-													handler : me.onResumeModule
-												}, {
-													text : '零件加工',
-													isTxt : false,
-													states : "['20408']",
-													// isNew : false,
-													iconCls : 'cog-16',
-													parent : me,
-													handler : me.onResumeModule
-												}, {
-													text : '治具加工',
-													isTxt : false,
-													states : "['20409']",
-													// isNew : false,
-													iconCls : 'cog_go-16',
-													parent : me,
-													handler : me.onResumeModule
-												}, {
-													text : '量产加工',
-													isTxt : false,
-													states : "['20410']",
-													// isNew : false,
-													iconCls : 'wand-16',
-													parent : me,
-													handler : me.onResumeModule
-												}, {
-													text : '暂停模具',
-													isTxt : false,
-													// isNew : false,
-													states : "['20404']",
-													parent : me,
-													iconCls : 'cog_delete-16',
-													handler : me.onResumeModule
-												} ]
-											})
-										} ]
-									} ],
-									listeners : {
-										itemdblclick : me.onClickModuleNumber
-									}
+								Ext.getCmp('module-part-plan-txt-qurey').setValue(Ext.emptyString);
+
+								me.gantt.taskStore.loadData([]);
+							}
+						}
+					}),
+					columns : [ {
+						xtype : 'gridcolumn',
+						dataIndex : 'modulecode',
+						renderer : function(val, meta, record) {
+							var _resumename = record.get('resumename');
+							return '<b>' + val + "<font color = red>[" + (!_resumename ? '完成' : _resumename) + ']</font></b>';
+						}
+					} ],
+					dockedItems : [ {
+						xtype : 'toolbar',
+						items : [ {
+							id : 'mpp-chk-by-guest',
+							xtype : 'checkbox',
+							boxLabel : '依番号'
+						}, ''
+						// ,
+						// Ext.create('Module.ModuleFindTextField',
+						// {
+						// queryLength : 2,
+						// url : 'public/module?isResume=false'
+						// })
+						, {
+							xtype : 'textfield',
+							emptyText : '请输入模具号',
+							isTxt : true,
+							listeners : {
+								change : me.onResumeModule
+							}
+						}, {
+							text : '快速查询',
+							iconCls : 'lightning-16',
+							menu : Ext.create("Ext.menu.Menu", {
+								items : [ {
+									text : '新增模具',
+									// isNew : true,
+									isTxt : false,
+									states : "['20401']",
+									parent : me,
+									iconCls : 'cog_add-16',
+									handler : me.onResumeModule
 								}, {
-									xtype : 'treepanel',
-									id : 'module-part-plan-part-treepanel',
-									flex : 1.3,
-									resumeid : null,
-									border : '1 0 0 0',
-									region : 'south',
-									margin : '5 0 0 0',
-									tbar : [ {
-										id : 'export-sche-list-btn',
-										text : '导出排程',
-										iconCls : 'page_gear-16',
-										resumeid : null,
-										handler : function() {
-											var self = this;
-											if (self.resumeid) {
-												new ExportScheduleListWindow({
-													resumeid : this.resumeid
-												}).show();
-											} else {
-												showError('未选中任何模具讯息!');
-											}
-										}
-									}, '-', {
-										id : 'export-sche-list-edit',
-										text : '零件编辑',
-										partcode : null,
-										iconCls : 'page_edit-16',
-										handler : function() {
-											if (this.partcode) {
-												new PartScheduleEidtor({
-													partid : this.partcode
-												}).show();
-											}
-										}
-									} ],
-									title : '工件列表',
-									useArrows : true,
-									rootVisible : false,
-									store : Ext.create('Ext.data.TreeStore', {
-										id : 'module-part-plan-tree-store-id',
-										fields : me.partFields,
-										autoLoad : false,
-										proxy : {
-											type : 'ajax',
-											url : 'public/moduleResumePart',
-											reader : {
-												type : 'json',
-												root : 'children'
-											}
-										}
-									}),
-									viewConfig : {
-										emptyText : me.emptyText,
-									},
-
-									listeners : {
-										itemclick : me.onClickModulePart
-									}
+									text : '修模设变',
+									isTxt : false,
+									// isNew : false,
+									states : "['20402','20403']",
+									parent : me,
+									iconCls : 'cog_edit-16',
+									handler : me.onResumeModule
+								}, {
+									text : '零件加工',
+									isTxt : false,
+									states : "['20408']",
+									// isNew : false,
+									iconCls : 'cog-16',
+									parent : me,
+									handler : me.onResumeModule
+								}, {
+									text : '治具/量产',
+									isTxt : false,
+									states : "['20409']",
+									// isNew : false,
+									iconCls : 'cog_go-16',
+									parent : me,
+									handler : me.onResumeModule
+								}, {
+									text : '暂停模具',
+									isTxt : false,
+									// isNew : false,
+									states : "['20404']",
+									parent : me,
+									iconCls : 'cog_delete-16',
+									handler : me.onResumeModule
 								} ]
-					}, {
-						xtype : 'container',
-						layout : 'border',
-						region : 'center',
-						items : [ me.gantt ]
+							})
+						} ]
+					} ],
+					listeners : {
+						itemdblclick : me.onClickModuleNumber
 					}
-			// , me.workloadPanel
-			]
+				}, {
+					xtype : 'treepanel',
+					id : 'module-part-plan-part-treepanel',
+					flex : 1.3,
+					resumeid : null,
+					border : '1 0 0 0',
+					region : 'south',
+					margin : '5 0 0 0',
+					tbar : [ {
+						id : 'module-part-plan-txt-qurey',
+						xtype : 'textfield',
+						emptyText : '查找零件号',
+						width : 110,
+						listeners : {
+							change : function(field, nw, od) {
+								// 甘特图先清空
+								me.gantt.taskStore.loadData([]);
+
+								var store = Ext.getStore('module-part-plan-tree-store-id');
+								store.reload({
+									params : {
+										resumeid : me.consult.resumeid,
+										partcode : nw
+									},
+									success : function() {
+										// 将选中的零件信息清空
+										me.consult.partbarcode = null;
+										me.consult.partcode = null;
+									}
+								});
+							}
+						}
+					}, '->', {
+						text : '复制',
+						iconCls : 'page_white_paste-16',
+						handler : function() {
+							var treeview = this.up('treepanel');
+							var selRows = treeview.getSelectionModel().getSelection();
+							// 勾选行
+							var chkRows = treeview.getChecked();
+							if (!chkRows.length) {
+								showError('没有选择任何要复制排程的零件');
+								return;
+							}
+
+							var chkr = [];
+							if (chkRows.length) {
+								for ( var x in chkRows) {
+									chkr.push(chkRows[x].get('partbarlistcode'));
+								}
+							}
+
+							if (!selRows.length) {
+								showError('没有选择任何要安排排程的工件或者部件');
+								return;
+							}
+
+							var selR = selRows[0];
+
+							App.Progress('正在复制中...', '排程复制');
+
+							Ext.Ajax.request({
+								url : 'module/schedule/copyPartSchedule',
+								params : {
+									resumeid : me.consult.setresumeid,
+									reference : me.consult.setbarcode,
+									selpart : selR.get('partbarlistcode'),
+									copies : Ext.JSON.encode(chkr)
+								},
+								method : 'POST',
+								success : function(resp) {
+									App.ProgressHide();
+
+									var backJson = Ext.JSON.decode(resp.responseText);
+									if (backJson.success) {
+
+										for ( var m in chkRows) {
+											var childNode = chkRows[m];
+											// 取消子节点勾选
+											childNode.set("checked", false);
+											// 将没有复制排程的零件设置为已经复制状态
+											childNode.set('cls', 'craft-schedule-exits');
+										}
+
+										if (backJson.gantt.length) {
+
+											for ( var x in backJson.gantt) {
+
+												backJson.gantt[x].Name = backJson.gantt[x].name;
+												backJson.gantt[x].PercentDone = backJson.gantt[x].percentDone;
+
+												backJson.gantt[x].StartDate = backJson.gantt[x].startDate;
+												backJson.gantt[x].EndDate = backJson.gantt[x].endDate;
+
+												backJson.gantt[x].Duration = backJson.gantt[x].duration;
+												backJson.gantt[x].DurationUnit = backJson.gantt[x].durationUnit;
+											}
+
+											me.gantt.taskStore.loadData(backJson.gantt);
+										}
+
+										showSuccess(backJson.msg);
+									} else {
+										showError(backJson.msg);
+									}
+								},
+								failure : function(x, y, z) {
+									App.ProgressHide();
+									showError('请检查网络是否正常');
+								}
+							});
+						}
+					}, '-', {
+						id : 'export-sche-list-btn',
+						text : '导出',
+						iconCls : 'page_gear-16',
+						resumeid : null,
+						handler : function() {
+							var self = this;
+							if (self.resumeid) {
+								new ExportScheduleListWindow({
+									resumeid : this.resumeid
+								}).show();
+							} else {
+								showError('未选中任何模具讯息!');
+							}
+						}
+					}, '-', {
+						id : 'export-sche-list-edit',
+						text : me.editBtnText,
+						partcode : null,
+						iconCls : 'page_edit-16',
+						handler : function() {
+							if (this.partcode) {
+								new PartScheduleEidtor({
+									partid : this.partcode
+								}).show();
+							}
+						}
+					} ],
+					title : '工件列表',
+					useArrows : true,
+					rootVisible : false,
+					store : Ext.create('Ext.data.TreeStore', {
+						id : 'module-part-plan-tree-store-id',
+						fields : me.partFields,
+						proxy : {
+							type : 'ajax',
+							url : 'public/moduleResumeUnit',
+							reader : {
+								type : 'json'
+							}
+						},
+						autoLoad : true
+					}),
+					viewConfig : {
+						emptyText : me.emptyText,
+					},
+
+					listeners : {
+						itemclick : me.onClickModulePart
+					}
+				} ]
+			}, {
+				xtype : 'container',
+				layout : 'border',
+				region : 'center',
+				items : [ me.gantt ]
+			} ]
 		});
 
 		me.callParent(arguments);
@@ -1137,59 +1247,55 @@ Ext.define('Module.ModulePartPlan', {
 	onDefaultPlan : function() {
 		var menuItem = this;
 
+		// 获取主界面
 		var me = Ext.getCmp('Module.ModulePartPlan');
-		var records = Ext.getCmp('module-part-plan-part-treepanel').getView().getChecked();// 可以对多个工件同时安排工艺排程
-		// me.isMainPart ||
-		if (records.length > 0) {
-			var partBarCodes = [];
-			var partListBarcodes = [];
-			// 得到要生成排程的工件条码数组--------------------------
-			// if (records.length > 0) {
-			for ( var i in records) {
-				var p = records[i].data.children;
-				partBarCodes.push(records[i].data.partBarCode);
-
-				var partListBarcode = [];
-				for (var x = 0; x < p.length; x++) {
-					partListBarcode.push(p[x].partbarlistcode);
-				}
-				partListBarcodes.push(partListBarcode);
-			}
-
-			var window = Ext.create('Module.AutoCreatePlanWindow', {
-				title : '自动生成排程',
-				parentPanel : me,
-				selectParts : records,
-				taskStore : me.gantt.taskStore,
-				partBarCodes : partBarCodes,
-				partListBarcodes : partListBarcodes,
-				moduleResumeId : me.moduleResumeId
-			});
-
-			window.store.loadData(menuItem.children);
-
-			window.show();
-		} else {
-			Fly.msg('提示', '您没有选择主要工件编号,请选择!');
+		// 获取零件树
+		var treeView = Ext.getCmp('module-part-plan-part-treepanel');// 可以对多个工件同时安排工艺排程
+		// 勾选的节点
+		var checkNodes = treeView.getChecked();
+		if (!checkNodes.length) {
+			showError('没有勾选任何零件信息');
+			return;
 		}
 
+		// 获取选择节点
+		var selNodes = treeView.getSelectionModel().getSelection();
+
+		var window = Ext.create('Module.AutoCreatePlanWindow', {
+			title : '自动生成排程',
+			checkNodes : checkNodes,
+			selNode : (selNodes.length ? selNodes[0] : null),
+			taskStore : me.gantt.taskStore
+		});
+
+		window.store.loadData(menuItem.children);
+
+		window.show();
 	},
 	/** 点击模具工号显示模具相应工件清单 */
 	onClickModuleNumber : function(treeview, record) {
+		var parent = Ext.getCmp('Module.ModulePartPlan');
+
+		// 获取订单日期和结束日期
 		var starttime = new Date(record.get('starttime'));
 		var endtime = new Date(record.get('endtime'));
 		// 将编辑按钮设置为不可用
-		Ext.getCmp('export-sche-list-edit').setDisabled(true);
+		var editBtn = Ext.getCmp('export-sche-list-edit');
+
+		editBtn.setDisabled(true);
+		editBtn.setText(parent.editBtnText);
 
 		// 设置零件列表的缓存模具履历号
 		var exportScheBtn = Ext.getCmp('export-sche-list-btn');
 		exportScheBtn.resumeid = record.get('id');
 
-		// 选择了就无需再选择
-		// if (!treeview.selectRecord || record != treeview.selectRecord) {
-		var parent = Ext.getCmp('Module.ModulePartPlan');
-		parent.partBarCode = '';
-		parent.partListBarcode = "";
+		// 设置参考零件的模具工号
+		parent.consult.modulecode = record.get('modulecode');
+		parent.consult.resumeid = record.get('id');
+
+		// 将选择零件的信息清空
+		parent.consult.partbarcode = null;
+		parent.consult.partcode = null;
 
 		parent.gantt.getTaskStore().loadData([]);
 		// 设置排程区间
@@ -1204,25 +1310,21 @@ Ext.define('Module.ModulePartPlan', {
 			parent.gantt.setEnd(endtime);
 		}
 
-		parent.gantt.setTitle(Ext.String.format("{0}   加工时间:{1}至{2}", record.data.text, Ext.Date.format(starttime, "Y-m-d"), Ext.Date.format(endtime,
-				"Y-m-d")));
+		parent.gantt.setTitle(Ext.String.format("[ {0} ] 加工时间: {1} 至 {2}", record.data.text, Ext.Date.format(starttime, "Y-m-d"), Ext.Date.format(
+				endtime, "Y-m-d")));
 
 		// 重新选择工件时,就从当前开始
 		parent.gantt.craftStartDate = NowDate;
-
-		parent.isMainPart = false;// 表示没有选中主工件
-
+		// 设置选择行
 		treeview.selectRecord = record;
 
 		var store = Ext.getStore('module-part-plan-tree-store-id');
 
 		store.load({
-			url : store.proxy.url,
 			params : {
-				moduleResumeId : record.data.id
+				resumeid : record.data.id
 			}
 		});
-		// }
 	},
 
 	/**
@@ -1230,78 +1332,55 @@ Ext.define('Module.ModulePartPlan', {
 	 * @param treeview
 	 * @param record
 	 */
-	onClickModulePart : function(treeview, record) {
+	onClickModulePart : function(treeview, record, item, index, e) {
+		// 单击加载零件排程的时候，如果是勾选则不加载
+		if (e.target.className.indexOf('x-tree-checkbox') > -1) {
+			return;
+		}
 		if (!record) {
 			return;
 		}
 
 		var parent = Ext.getCmp('Module.ModulePartPlan');
-		var partid = '';
-
 		var editBtn = Ext.getCmp('export-sche-list-edit');
 
-		switch (record.data.depth) {
-		case 1: {// 选择工件汇总
+		// 获取零件唯一号
+		var partid = record.data.partbarlistcode;
+		// 获取零件编号
+		parent.consult.partcode = record.data.partlistcode;
+		// 缓存选中的零件信息
+		parent.selectPartRecord = record;
+		// 是否部件
+		parent.consult.ismain = false;
+		// 设置零件号
+		parent.consult.partbarcode = partid;
 
-			// 将可编辑按钮设置为不可编辑
-			editBtn.setText('零件编辑');
-			editBtn.setDisabled(true);
-
-			parent.partBarCode = record.data.partBarCode;
-			partid = parent.partBarCode;
-			var p = record.data.children;
-			parent.partListBarcodes = '';
-			for (var i = 0; i < p.length; i++) {
-				parent.partListBarcodes = parent.partListBarcodes.concat(p[i].partbarlistcode).concat(";");
-			}
-
-			parent.isMainPart = true;
-			parent.moduleResumeId = record.data.moduleResumeId;
-
-			break;
+		if (editBtn.isDisabled()) {
+			editBtn.setDisabled(false);
 		}
-		case 2: {// 选择工件清单
-			parent.partBarCode = '';
-			parent.partListBarcodes = record.data.partbarlistcode.concat(";");
-			partid = record.data.partbarlistcode;
-			parent.isMainPart = false;
-			parent.moduleResumeId = record.parentNode.data.moduleResumeId;
 
-			Ext.Ajax.request({
-				url : 'public/getPartContent?partid=' + partid,
-				success : function(resp) {
-					var backJson = Ext.JSON.decode(resp.responseText);
-					if (backJson.success) {
-						editBtn.setDisabled(false);
-						editBtn.partcode = partid;
+		Ext.Ajax.request({
+			url : 'public/getPartContent?partid=' + partid,
+			success : function(resp) {
+				var backJson = Ext.JSON.decode(resp.responseText);
+				if (backJson.success) {
+					editBtn.partcode = partid;
 
-						if (backJson.empty) {
-							editBtn.setText('零件编辑');
-						} else {
-							editBtn.setText('<font color = blue><b>零件编辑</b></font>');
-						}
+					if (backJson.empty) {
+						editBtn.setText(parent.editBtnText);
 					} else {
-						editBtn.setText('零件编辑');
-						editBtn.setDisabled(true);
-
-						showError(backJson.msg);
+						editBtn.setText('<font color = blue><b>' + parent.editBtnText + '</b></font>');
 					}
-				},
-				failure : function(x, y, z) {
-					editBtn.setText('零件编辑');
-					editBtn.setDisabled(true);
-
-					showError('连接服务器失败,请检查网络连接!');
+				} else {
+					editBtn.setText(parent.editBtnText);
+					showError(backJson.msg);
 				}
-			});
-
-			break;
-		}
-		}
-
-		// parent.tipTitle = record.data.text + "# 加工排程";
-		// parent.gantt.setTitle(parent.gantt.title.split(":")[0] + ":" +
-		// parent.tipTitle);
+			},
+			failure : function(x, y, z) {
+				editBtn.setText(parent.editBtnText);
+				showError('连接服务器失败,请检查网络连接!');
+			}
+		});
 
 		// 重新选择工件时,就从当前开始
 		parent.gantt.craftStartDate = NowDate;
@@ -1314,29 +1393,18 @@ Ext.define('Module.ModulePartPlan', {
 			url : 'module/schedule/craftPlanGantt',
 			params : {
 				"mes.partId" : partid,
-				"mes.moduleResumeId" : parent.moduleResumeId
+				"mes.moduleResumeId" : parent.consult.resumeid
 			},
 			success : function(response) {
-				var res = JSON.parse(response.responseText);
+				var res = Ext.JSON.decode(response.responseText);
 
 				App.InterPath(res, function() {
 					if (!res.success) {
 						showError(res.msg);
+						return;
 					}
 
 					parent.gantt.taskStore.loadData(res.gantt);
-
-					// 工件选择处理方法
-					if (record.data.checked) {
-						parent.taskGantt.push(res.gantt);
-					} else {
-						for ( var i in parent.taskGantt) {
-							if (parent.taskGantt[i].join() == res.gantt.join()) {
-								delete parent.taskGantt[i];
-								break;
-							}
-						}
-					}
 				});
 
 				App.ProgressHide();
@@ -1347,7 +1415,6 @@ Ext.define('Module.ModulePartPlan', {
 				App.Error(response);
 			}
 		});
-
 	}
 
 });

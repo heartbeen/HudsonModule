@@ -9746,3 +9746,16 @@
 .percent75 div {
 	width: 75%
 }
+
+/********************************************AH32Í¼±ê************************************/
+.brush_yun-32 {
+	background-image: url(../images/AH32/brush_yun.png) !important
+}
+
+.paint_brush-32 {
+	background-image: url(../images/AH32/paint_brush.png) !important
+}
+
+.document_copy-32 {
+	background-image: url(../images/AH32/document_copy.png) !important
+}

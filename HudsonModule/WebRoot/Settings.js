@@ -113,7 +113,7 @@ Ext.define('DesktopSetting', {
 		}
 
 		me.preview.setWallpaper(me.selected);
-		me.parent.executeArray[0] = me.execute;
+		// me.parent.executeArray[0] = me.execute;
 	},
 
 	setInitialSelection : function() {
@@ -147,26 +147,18 @@ Ext.define('AccoutSecurityForm', {
 
 		Ext.apply(me, {
 			items : [ {
-				xtype : 'label',
-				text : '登录账号:' + Cookies.getCookie('username'),
-				style : {
-					color : oldItmeColor,
-					margin : '0 0 0 65'
-				}
-			}, {
 				xtype : 'textfield',
-				id : 'securityform-userName',
 				anchor : '100%',
-				fieldLabel : '登录账号',
-				style : {
-					marginTop : '5px'
-				},
-				labelWidth : 60
+				fieldLabel : '旧密码',
+				id : 'security-old',
+				allowBlank : false,
+				labelWidth : 60,
+				inputType : 'password'
 			}, {
 				xtype : 'textfield',
 				anchor : '100%',
 				fieldLabel : '新密码',
-				id : 'securityform-password1',
+				id : 'security-new',
 				allowBlank : false,
 				labelWidth : 60,
 				inputType : 'password'
@@ -175,30 +167,14 @@ Ext.define('AccoutSecurityForm', {
 				anchor : '100%',
 				fieldLabel : '确认密码',
 				allowBlank : false,
-				id : 'securityform-password2',
+				id : 'security-repeat',
 				labelWidth : 60,
-				inputType : 'password',
-				validator : function(value) {
-					var password1 = this.previousSibling('[id=securityform-password1]');
-					return (value === password1.getValue()) ? true : '两次密码输入错误';
-				}
+				inputType : 'password'
 			} ],
-			dockedItems : [ {
-				xtype : 'toolbar',
-				dock : 'bottom',
-				ui : 'footer',
-				layout : {
-					align : 'stretchmax',
-					type : 'hbox'
-				},
-				items : [ {
-					xtype : 'button',
-					width : 60,
-					text : '更改',
-					formBind : true,// 响应表单验证,如果表单验证通过时刚有效
-					disabled : true,
-					handler : me.onChanagePassword
-				} ]
+			tbar : [ {
+				iconCls : 'dialog-ok-16',
+				text : '修改密码',
+				handler : me.onChanagePassword
 			} ]
 		});
 
@@ -206,30 +182,30 @@ Ext.define('AccoutSecurityForm', {
 	},
 	onChanagePassword : function() {
 		var form = this.up('form').getForm();
-
-		/*
-		 * Normally we would submit the form to the server here and handle the
-		 * response...
-		 */if (form.isValid()) {
+		if (form.isValid()) {
 			Ext.Ajax.request({
-				url : 'changeuserinfo',
+				url : 'alterUserInfo',
 				params : {
-					id : UserRole.workNumber,
-					userName : App.getValue('securityform-userName'),
-					password1 : App.getValue('securityform-password1'),
-					password2 : App.getValue('securityform-password2')
+					security_old : Ext.getCmp('security-old').getValue(),
+					security_new : Ext.getCmp('security-new').getValue(),
+					security_repeat : Ext.getCmp('security-repeat').getValue()
 				},
-				success : function(response) {
-					Ext.Msg.alert('信息', response.responseText);
-					Cookies.setCookie('username', App.getValue('securityform-userName'), 7);
-					form.reset();
+				method : 'POST',
+				success : function(res) {
+					var backJson = Ext.JSON.decode(res.responseText);
+					if (backJson.success) {
+						Ext.Msg.alert('错误', '修改成功下次登录生效');
+					} else {
+						Ext.Msg.alert('错误', backJson.msg);
+					}
 				},
-				failure : function(response) {
-					Ext.Msg.alert("错误", response.status);
+				failure : function(x, y, z) {
+					Ext.Msg.alert('错误', '连接服务器失败');
 				}
 			});
+		} else {
+			Ext.Msg.alert('提示', '密码不允许为空');
 		}
-
 	}
 });
 
@@ -247,7 +223,7 @@ Ext.define('AccoutInformationForm', {
 				anchor : '100%',
 				fieldLabel : '姓名',
 				labelWidth : 60,
-				value : !Cookies.setCookie('wallpaper') ? Cookies.setCookie('wallpaper'):'wallpapers/Blue-Sencha.jpg',
+				value : !Cookies.setCookie('wallpaper') ? Cookies.setCookie('wallpaper') : 'wallpapers/Blue-Sencha.jpg',
 				readOnly : true
 			}, {
 				xtype : 'fieldset',
@@ -367,6 +343,8 @@ Ext.define('AccoutInformationForm', {
 			});
 		}
 
+	},
+	execute : function() {
 	}
 });
 
@@ -421,23 +399,17 @@ Ext.define('UserSetting', {
 		});
 
 		me.callParent();
-
-		tree.selectPath('/root/账户安全', 'text');
 	},
 
 	onSelectSettingItem : function(tree, record, item, index, e, eOpts) {
 
 		if (record.data.leaf) {
-
-			// var item = Ext.create(record.data.id);
 			var con = Ext.getCmp('settimg-item-container');
 			con.getLayout().setActiveItem(index);
-			// con.add(item);
 		}
 	},
 
 	execute : function() {
-
 	}
 
 });
@@ -455,7 +427,7 @@ Ext.define('MyDesktop.Settings', {
 	id : 'setting-window',
 
 	// 用于存放所有设置完成后的设置方法
-	executeArray : [],
+	executeItem : null,
 	initComponent : function() {
 		var me = this;
 
@@ -481,7 +453,7 @@ Ext.define('MyDesktop.Settings', {
 			items : [ {
 				xtype : 'button',
 				text : Settings.desktopSetting,
-				iconCls : 'gnome-run-24',
+				iconCls : 'gtk-execute-24',
 				cls : 'apply-car-info-button-group',
 				state : '1',
 				width : 60,
@@ -524,29 +496,18 @@ Ext.define('MyDesktop.Settings', {
 	 * @param button
 	 */
 	onChanageSetting : function(button) {
-
+		// 获取窗口信息
 		var parent = button.up('window');
-
 		parent.getLayout().setActiveItem(button.index);
-
-		// var item = Ext.create(button.itemName, {
-		// desktop : parent.desktop,
-		// parent : parent
-		// });
-		//
-		// parent.removeAll();
-		// parent.add(item);
-		parent.executeArray[button.itemName] = parent.getLayout().getActiveItem().execute;
-
 	},
 
 	onOK : function() {
 		var me = this;
-
 		// 执行所有设置内容
-		Ext.Array.each(me.executeArray, function(execute) {
-			execute();
+		Ext.Array.each(me.items.items, function(item) {
+			item.execute();
 		});
+
 		me.destroy();
 	},
 

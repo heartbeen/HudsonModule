@@ -9,22 +9,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jfinal.aop.Before;
 import com.jfinal.aop.ClearInterceptor;
 import com.jfinal.core.Controller;
-import com.jfinal.log.Logger;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.IAtom;
 import com.jfinal.plugin.activerecord.Record;
-import com.kc.module.base.Barcode;
+import com.kc.module.extract.ModuleScheduleInquireExtract;
 import com.kc.module.interceptor.AuthInterceptor;
 import com.kc.module.interceptor.validator.CraftPlanValidator;
 import com.kc.module.model.ModuleCraftSet;
@@ -32,11 +29,11 @@ import com.kc.module.model.ModuleEstSchedule;
 import com.kc.module.model.ModuleList;
 import com.kc.module.model.form.GanttExportForm;
 import com.kc.module.model.form.GanttExportFormList;
-import com.kc.module.model.form.ModuleSchedule;
-import com.kc.module.model.form.ModuleScheduleList;
 import com.kc.module.transaction.AddCraftClassifyIAtom;
 import com.kc.module.transaction.AddCraftSetIAtom;
+import com.kc.module.transaction.CopyPartScheduleIAtom;
 import com.kc.module.transaction.CreateCraftPlanIAtom;
+import com.kc.module.transaction.QuotePartScheduleIAtom;
 import com.kc.module.transaction.RemoveCraftPlanIAtom;
 import com.kc.module.transaction.SaveEstimateRemarkIAtom;
 import com.kc.module.transaction.SaveOrUpdateScheduleIAtom;
@@ -58,8 +55,6 @@ import com.kc.module.utils.StringUtils;
 @Before(AuthInterceptor.class)
 public class ModuleScheduleController extends Controller {
 
-    private Logger logger = Logger.getLogger(this.getClass());
-
     /**
      * 得到模具的加工排程
      */
@@ -72,7 +67,7 @@ public class ModuleScheduleController extends Controller {
 
         List<ModuleEstSchedule> list = ModuleEstSchedule.dao.findModuleResumeSchedule(mri);
 
-        Map<Record, List<ModuleEstSchedule>> map = DataUtils.modelTwoLayout(list, "PARTLISTCODE", "PARTLISTCODE");
+        Map<Record, List<ModuleEstSchedule>> map = DataUtils.modelTwoLayout(list, "PARTBARLISTCODE", new String[]{"PARTLISTCODE"}, null);
 
         Iterator<Record> iterator = map.keySet().iterator();
         Record keyRecord;
@@ -214,37 +209,10 @@ public class ModuleScheduleController extends Controller {
      * 得到工件的排程Gantt信息
      */
     public void craftPlanGantt() {
-        List<ModuleEstSchedule> list = getModel(ModuleEstSchedule.class, "mes").findCraftPlanGanttData();
-        Iterator<ModuleEstSchedule> iterator = list.iterator();
-        ModuleEstSchedule mes;
+        ModuleScheduleInquireExtract msie = new ModuleScheduleInquireExtract();
+        msie.setController(this);
 
-        StringBuilder json = new StringBuilder();
-
-        json.append("\"gantt\":[");
-
-        while (iterator.hasNext()) {
-            mes = iterator.next();
-
-            json.append("{\"id\" :\"").append(mes.get("id"));
-            json.append("\",\"PercentDone\" : 0").append(",\"Duration\" : ");
-            json.append(mes.get("duration"));
-            json.append(",\"DurationUnit\" : \"h\"");
-            json.append(",\"leaf\" : true").append(",\"Name\" :\"");
-            json.append(mes.getStr("craft"));
-            json.append("\",\"index\" :").append(mes.get("RANKNUM"));
-            json.append(",\"typeid\" :").append(mes.get("TYPEID"));
-            json.append(",\"evaluate\" :").append(mes.get("EVALUATE"));
-            json.append(",\"craftId\" :").append(mes.get("CRAFTID"));
-            json.append(",\"StartDate\" :\"");
-            json.append(mes.get("starttime") == null ? "" : mes.get("starttime"));
-            json.append("\",\"EndDate\" :\"");
-            json.append(mes.get("endtime") == null ? "" : mes.get("endtime"));
-            json.append("\",\"remark\":\"").append(StringUtils.parseString(mes.get("REMARK"))).append("\"").append(iterator.hasNext() ? "}," : "}");
-        }
-        json.append("]");
-
-        renderJson("{\"success\":" + (list.size() > 0) + "," + json.toString() + ",\"msg\":\"" + (list.size() > 0 ? "数据读取成功!" : "没有排程数据!") + "\"}");
-
+        renderText(StringUtils.parseString(msie.extract()));
     }
 
     /**
@@ -256,7 +224,7 @@ public class ModuleScheduleController extends Controller {
         ccpi.setController(this);
         boolean succeed = ControlUtils.doIAtom(ccpi);
 
-        setAttr("schId", ccpi.getSchId());
+        setAttr("gantt", ccpi.getSchId());
         setAttr("success", succeed);
         setAttr("msg", ccpi.getMsg());
 
@@ -274,6 +242,7 @@ public class ModuleScheduleController extends Controller {
 
         setAttr("success", succeed);
         setAttr("msg", rcpi.getMsg());
+        setAttr("gantt", rcpi.getScheduleId());
 
         renderJson();
     }
@@ -289,7 +258,7 @@ public class ModuleScheduleController extends Controller {
         boolean success = ControlUtils.doIAtom(scpi);
 
         setAttr("success", success);
-        setAttr("msg", success ? "排程工时安排成功!" : "排程工时安排失败!");
+        setAttr("msg", scpi.getMsg());
 
         renderJson();
     }
@@ -343,149 +312,16 @@ public class ModuleScheduleController extends Controller {
      */
     @ClearInterceptor
     public void autoCraftPlan() {
-        boolean success = Db.tx(new IAtom() {
-            public boolean run() throws SQLException {
-                try {
-                    // 将前台提交的json进行解析
-                    ObjectMapper mapper = new ObjectMapper();
-                    ModuleScheduleList sch = mapper.readValue(getPara("plan"), ModuleScheduleList.class);
+        QuotePartScheduleIAtom qpsi = new QuotePartScheduleIAtom();
+        qpsi.setController(this);
 
-                    // 1.先将旧排程删除
-                    if (!deleteBeforeAutoPlan(sch.getPlanIds())) {
-                        setAttr("msg", "删除旧排程失败!");
-                        return false;
-                    }
-
-                    // 2.保存新排程
-                    if (!saveAutoCraftPlan(sch.getMainPart(), sch.getPartList())) {
-                        setAttr("msg", "保存排程失败!");
-                        return false;
-                    }
-                }
-                catch (JsonParseException e) {
-                    logger.error("Json格式错误!", e);
-                    setAttr("msg", "Json格式错误!");
-                    e.printStackTrace();
-                    return false;
-                }
-                catch (JsonMappingException e) {
-                    logger.error("Json映射Bean错误!", e);
-                    setAttr("msg", "Json映射Bean错误!");
-                    e.printStackTrace();
-                    return false;
-                }
-                catch (Exception e) {
-                    logger.error("保存排程出现异常!", e);
-                    setAttr("msg", "保存排程出现异常!");
-                    e.printStackTrace();
-                    return false;
-                }
-
-                setAttr("msg", "自动生成排程成功!");
-                return true;
-            }
-        });
+        boolean success = Db.tx(qpsi);
 
         setAttr("success", success);
+        setAttr("msg", qpsi.getMsg());
+        setAttr("gantt", qpsi.getSchedule());
 
         renderJson();
-
-    }
-
-    /**
-     * 删除自动生成排程之前的排程
-     * 
-     * @return
-     */
-    private boolean deleteBeforeAutoPlan(String[] planIds) {
-
-        // 前台没有提交要删除的旧排程ID时,表示以前没有过,就不用删除
-        if (planIds != null && planIds.length == 0) {
-            return true;
-        }
-
-        List<ModuleEstSchedule> list = ModuleEstSchedule.dao.findCraftPlanById(planIds);
-
-        for (ModuleEstSchedule m : list) {
-            if (!m.delete()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * 保存自动生成的排程
-     * 
-     * @return
-     * @throws JsonParseException
-     * @throws JsonMappingException
-     * @throws IOException
-     */
-    private boolean saveAutoCraftPlan(List<ModuleSchedule> mainPart, List<ModuleSchedule> partList) throws JsonParseException, JsonMappingException,
-            IOException {
-
-        ModuleEstSchedule mes;
-
-        String parentId;
-        String[] indexs;
-        List<String> planIdList = new ArrayList<String>();// 保存工艺id用来响应前台
-        // 重新从数据库中加载一次ID号
-        Barcode.MODULE_EST_SCHEDULE.nextVal(true);
-
-        for (ModuleSchedule m : mainPart) {
-            mes = new ModuleEstSchedule();
-
-            parentId = Barcode.MODULE_EST_SCHEDULE.nextVal();
-            planIdList.add(parentId);
-
-            handlerData(mes, m, parentId, null);
-
-            indexs = m.getParentId().split(";");// 工件清单所在的索引号
-
-            if (!mes.save()) {
-                return false;
-            }
-
-            for (String index : indexs) {
-                mes = new ModuleEstSchedule();
-                handlerData(mes, partList.get(Integer.valueOf(index)), Barcode.MODULE_EST_SCHEDULE.nextVal(), parentId);
-
-                if (!mes.save()) {
-                    return false;
-                }
-            }
-        }
-
-        // 排程新增成功后,要将工艺ID号传到前台
-        setAttr("planId", planIdList.toArray());
-        return true;
-
-    }
-
-    /**
-     * 前台提交的工艺排程bean数据转换成model数据
-     * 
-     * @param mes
-     * @param m
-     * @param id
-     * @param parentId
-     */
-    private void handlerData(ModuleEstSchedule mes, ModuleSchedule m, String id, String parentId) {
-        mes.set("id", id);
-        mes.set("starttime", new Timestamp(m.getStartTime().getTime()));
-        mes.set("endtime", new Timestamp(m.getEndTime().getTime()));
-        mes.set("craftid", m.getCraftid());
-        mes.set("moduleResumeId", m.getModuleRId());
-        mes.set("partid", m.getPartId());
-        mes.set("duration", m.getDuration());
-        mes.set("ranknum", m.getRankNum());
-        mes.set("remark", m.getRemark());
-
-        if (parentId != null) {
-            mes.set("parentId", parentId);
-        }
     }
 
     /**
@@ -648,6 +484,19 @@ public class ModuleScheduleController extends Controller {
 
         setAttr("msg", spci.getMsg());
         setAttr("success", success);
+
+        renderJson();
+    }
+
+    public void copyPartSchedule() {
+        CopyPartScheduleIAtom cpsi = new CopyPartScheduleIAtom();
+        cpsi.setController(this);
+
+        boolean success = Db.tx(cpsi);
+
+        setAttr("success", success);
+        setAttr("msg", cpsi.getMsg());
+        setAttr("gantt", cpsi.getSchedule());
 
         renderJson();
     }

@@ -25,12 +25,71 @@ Ext.define("Project.component.GanttToolbar", {
 			},
 
 			items : [ {
-				text : '删除所有',
-				iconCls : 'gtk-remove-16'
+				xtype : 'textfield',
+				fieldLabel : '参考零件',
+				width : 220,
+				labelWidth : 65,
+				readOnly : true
 			}, {
-				text : '删除所有',
-				iconCls : 'gtk-remove-16'
-			}, {
+				tooltip : '刷排程',
+				iconCls : 'paint_brush-32',
+				handler : function() {
+					var parent = Ext.getCmp('Module.ModulePartPlan');
+
+					parent.consult.setbarcode = parent.consult.partbarcode;
+					parent.consult.setresumeid = parent.consult.resumeid;
+
+					if (!parent.consult.partbarcode) {
+						showInfo('没有选择任何零件信息');
+						return;
+					}
+
+					var paratext = parent.consult.modulecode + ' - ' + parent.consult.partcode;
+
+					this.up().down('textfield').setValue(paratext);
+				}
+			}, '-', {
+				tooltip : '全部删除',
+				iconCls : 'gtk-delete-16',
+				handler : function() {
+					var parent = Ext.getCmp('Module.ModulePartPlan');
+
+					App.Progress('正在删除排程...', '排程删除');
+
+					Ext.Msg.confirm('提醒', '是否确认删除零件计划排程', function(y) {
+						if (y == 'yes') {
+							Ext.Ajax.request({
+								url : 'module/schedule/removeCraftPlan',
+								params : {
+									partbarlistcode : parent.consult.partbarcode
+								},
+								success : function(response) {
+									App.ProgressHide();
+
+									var res = JSON.parse(response.responseText);
+									App.InterPath(res, function() {
+										if (res.success) {
+											// 将零件信息设置为没有排程状态
+											parent.selectPartRecord.set('cls', 'craft-schedule-noexits');
+											// 将排程清空
+											parent.gantt.taskStore.loadData([]);
+
+											showSuccess(res.msg);
+										} else {
+											showError(res.msg);
+										}
+									});
+								},
+								failure : function(response) {
+									App.ProgressHide();
+									App.Error('请检查网络连接');
+								}
+							});
+						}
+					});
+				}
+
+			}, '->', {
 				tooltip : '向前一周',
 				iconCls : 'icon icon-left',
 				handler : function() {
@@ -74,15 +133,17 @@ Ext.define("Project.component.GanttToolbar", {
 				handler : function() {
 					gantt.zoomToFit();
 				}
-			}, {
-				tooltip : '全屏显示',
-				iconCls : 'icon icon-fullscreen',
-				disabled : !this._fullScreenFn,
-				handler : function() {
-					this.showFullScreen();
-				},
-				scope : this
-			}, '-', {
+			},
+			// {
+			// tooltip : '全屏显示',
+			// iconCls : 'icon icon-fullscreen',
+			// disabled : !this._fullScreenFn,
+			// handler : function() {
+			// this.showFullScreen();
+			// },
+			// scope : this
+			// },
+			'-', {
 				tooltip : '高亮显示',
 				iconCls : 'icon icon-criticalpath',
 				enableToggle : true,
@@ -94,70 +155,7 @@ Ext.define("Project.component.GanttToolbar", {
 						v.unhighlightCriticalPaths(true);
 					}
 				}
-			},
-			// , '-', {
-			// iconCls : 'icon icon-printer',
-			// tooltip : '打印',
-			// handler : function() {
-			// gantt.print();
-			// }
-			// }
-			// , {
-			// iconCls : 'icon icon-pdf-icon',
-			// tooltip : '导出为PDF',
-			// handler : function() {
-			// gantt.exportPlugin.setFileFormat('pdf');
-			// gantt.showExportDialog();
-			// }
-			// }, {
-			// iconCls : 'icon icon-png-icon',
-			// tooltip : '导出为PNG',
-			// handler : function() {
-			// gantt.exportPlugin.setFileFormat('png');
-			// gantt.showExportDialog();
-			// }
-			// }
-			// ,
-			// {
-			// tooltip : 'Add new task',
-			// iconCls : 'icon icon-add',
-			// enableToggle : true,
-			// handler : function (btn) {
-			// var task = gantt.taskStore.getRootNode().appendChild({
-			// // Name : 'New Task',
-			// leaf : true
-			// });
-			// gantt.getSchedulingView().scrollEventIntoView(task);
-			// gantt.editingInterface.startEdit(task, 1);
-			// }
-			// },
-			// {
-			// tooltip : 'Remove selected task(s)',
-			// iconCls : 'icon icon-delete',
-			// enableToggle : true,
-			// handler : function (btn) {
-			// gantt.getSelectionModel().selected.each(function(task) {
-			// task.remove();
-			// })
-			// }
-			// },
-			// {
-			// tooltip : 'Indent',
-			// iconCls : 'icon icon-indent',
-			// enableToggle : true,
-			// handler : function (btn) {
-			// gantt.taskStore.indent(gantt.getSelectionModel().getSelection());
-			// }
-			// },
-			// {
-			// tooltip : 'Outdent',
-			// iconCls : 'icon icon-outdent',
-			// enableToggle : true,
-			// handler : function (btn) {
-			// gantt.taskStore.outdent(gantt.getSelectionModel().getSelection());
-			// }
-			// },
-			'->', {
+			}, '-', {
 				text : '更多...',
 				menu : {
 					items : [ {
@@ -187,7 +185,7 @@ Ext.define("Project.component.GanttToolbar", {
 					}, {
 						text : '跳转到最后',
 						handler : function(btn) {
-							var latestEndDate = new Date(0), latest;
+							var latestEndDate = new Date(0), latest = null;
 							gantt.taskStore.getRootNode().cascadeBy(function(task) {
 								if (task.get('EndDate') >= latestEndDate) {
 									latestEndDate = task.get('EndDate');

@@ -1,331 +1,10 @@
-Ext.define('Deviser.ModuleDeviseInfo', {
-	extend : 'Ext.window.Window',
-
-	frame : true,
-	height : 600,
-	width : 800,
-	modal : true,
-	resumeid : null,
-	layout : {
-		type : 'border'
-	},
-	bodyPadding : 3,
-	title : '模具设计详情',
-	fieldDefaults : {
-		labelWidth : 65
-	},
-	initComponent : function() {
-		var me = this;
-
-		Ext.applyIf(me, {
-			items : [ {
-				id : 'dp-devise-resume-form',
-				xtype : 'form',
-				region : 'west',
-				split : true,
-				width : 300,
-				bodyPadding : 10,
-				title : '模具设计履历详情',
-				fieldDefaults : {
-					labelWidth : 65
-				},
-				items : [ {
-					fieldLabel : '设计组别',
-					name : 'groupid',
-					xtype : 'combobox',
-					anchor : '100%',
-					editable : false,
-					displayField : 'name',
-					allowBlank : false,
-					valueField : 'id',
-					store : Ext.create('Ext.data.Store', {
-						fields : [ 'id', 'name', 'stepid' ],
-						proxy : {
-							url : 'devise/share/getGroupInfo',
-							type : 'ajax',
-							reader : {
-								type : 'json'
-							}
-						},
-						autoLoad : true
-					})
-				}, {
-					fieldLabel : '客户番号',
-					name : 'guestcode',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '社内编号',
-					name : 'modulecode',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '客户名称',
-					name : 'shortname',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '模具状态',
-					name : 'resumestate',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '加工状态',
-					name : 'workstatename',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '订单日期',
-					name : 'orderdate',
-					readOnly : true,
-					xtype : 'textfield',
-					anchor : '100%'
-				}, {
-					fieldLabel : '订单纳期',
-					name : 'duedate',
-					readOnly : true,
-					xtype : 'textfield',
-					anchor : '100%'
-				}, {
-					fieldLabel : '预计开始',
-					name : 'startdate',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '预计完成',
-					name : 'enddate',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '实际开始',
-					name : 'actualstart',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '实际完成',
-					name : 'actualend',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '打合担当',
-					name : 'takeon',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '设计担当',
-					name : 'deviser',
-					xtype : 'textfield',
-					readOnly : true,
-					anchor : '100%'
-				}, {
-					fieldLabel : '备注说明',
-					name : 'remark',
-					xtype : 'textareafield',
-					readOnly : true,
-					anchor : '100%',
-					height : 108
-				} ]
-			}, {
-				xtype : 'container',
-				region : 'center',
-				layout : {
-					align : 'stretch',
-					type : 'vbox'
-				},
-				items : [ {
-					xtype : 'gridpanel',
-					flex : 1,
-					height : 537,
-					listeners : {
-						itemclick : function(grid, record) {
-							var k_store = Ext.getStore('dp-schedule-task-store');
-							k_store.load({
-								params : {
-									scheid : record.get('id')
-								}
-							});
-						}
-					},
-					forceFit : true,
-					viewConfig : {
-						getRowClass : function(record, rowIndex, p, store) {
-							if (record.get('relay')) {
-								return 'state-20203';
-							}
-						}
-					},
-					title : '制程计划安排',
-					store : Ext.create('Ext.data.Store', {
-						id : 'dp-schedule-info-store',
-						fields : [ 'id', 'craftname', 'statename', {
-							name : 'planstart',
-							type : 'date'
-						}, {
-							name : 'planend',
-							type : 'date'
-						}, {
-							name : 'factstart',
-							type : 'date'
-						}, {
-							name : 'factend',
-							type : 'date'
-						}, 'planhour', 'acthour', 'kind', 'relay' ],
-						autoLoad : true,
-						proxy : {
-							url : 'devise/share/getProcessScheduleInfo?resumeid=' + me.resumeid,
-							type : 'ajax',
-							reader : {
-								type : 'json'
-							}
-						}
-					}),
-					columns : [ {
-						dataIndex : 'craftname',
-						text : '制程名称',
-						renderer : RenderFontBold
-					}, {
-						dataIndex : 'statename',
-						text : '加工状态',
-						renderer : RenderFontBold
-					}, {
-						xtype : 'datecolumn',
-						dataIndex : 'planstart',
-						text : '计划开始',
-						renderer : function(val) {
-							return val ? '<b>' + Ext.Date.format(val, 'Y-m-d') + '</b>' : val;
-						}
-					}, {
-						xtype : 'datecolumn',
-						dataIndex : 'planend',
-						text : '计划结束',
-						renderer : function(val) {
-							return val ? '<b>' + Ext.Date.format(val, 'Y-m-d') + '</b>' : val;
-						}
-					}, {
-						xtype : 'datecolumn',
-						dataIndex : 'factstart',
-						width : 130,
-						text : '实际开始',
-						renderer : function(val) {
-							return val ? '<b>' + Ext.Date.format(val, 'Y-m-d H:i') + '</b>' : val;
-						}
-					}, {
-						xtype : 'datecolumn',
-						dataIndex : 'factend',
-						width : 130,
-						text : '实际结束',
-						renderer : function(val) {
-							return val ? '<b>' + Ext.Date.format(val, 'Y-m-d H:i') + '</b>' : val;
-						}
-					}, {
-						dataIndex : 'planhour',
-						text : '计划用时(H)',
-						renderer : RenderFontBold
-					}, {
-						dataIndex : 'acthour',
-						text : '实际用时(H)',
-						renderer : RenderFontBold
-					} ]
-				}, {
-					xtype : 'gridpanel',
-					flex : 1,
-					margins : '4 0 0 0',
-					forceFit : true,
-					viewConfig : {
-						getRowClass : function(record, rowIndex, p, store) {
-							if (!record.get('istime')) {
-								return 'state-20203';
-							}
-						}
-					},
-					store : Ext.create('Ext.data.Store', {
-						id : 'dp-schedule-task-store',
-						fields : [ 'empname', 'worknumber', 'regionname', 'craftname', 'statename', {
-							name : 'lrcdtime',
-							type : 'date'
-						}, {
-							name : 'nrcdtime',
-							type : 'date'
-						}, 'acthour', 'istime' ],
-						autoLoad : true,
-						proxy : {
-							url : 'devise/share/getScheduleTaskInfo',
-							type : 'ajax',
-							reader : {
-								type : 'json'
-							}
-						}
-					}),
-					title : '制程设计明细',
-					columns : [ {
-						dataIndex : 'empname',
-						text : '设计人员',
-						renderer : RenderFontBold
-					}, {
-						dataIndex : 'worknumber',
-						text : '工牌编号',
-						renderer : RenderFontBold
-					}, {
-						dataIndex : 'regionname',
-						text : '所在组别',
-						renderer : RenderFontBold
-					}, {
-						dataIndex : 'craftname',
-						text : '制程名称',
-						width : 130,
-						renderer : RenderFontBold
-					}, {
-						dataIndex : 'statename',
-						text : '设计状态',
-						renderer : RenderFontBold
-					}, {
-						dataIndex : 'lrcdtime',
-						text : '开始时间',
-						width : 130,
-						renderer : function(val) {
-							return val ? '<b>' + Ext.Date.format(val, 'Y-m-d H:i') + '</b>' : val;
-						}
-					}, {
-						dataIndex : 'nrcdtime',
-						width : 130,
-						text : '结束时间',
-						renderer : function(val) {
-							return val ? '<b>' + Ext.Date.format(val, 'Y-m-d H:i') + '</b>' : val;
-						}
-					}, {
-						dataIndex : 'acthour',
-						text : '实际用时(H)',
-						renderer : RenderFontBold
-					} ]
-				} ]
-			} ]
-		});
-
-		me.callParent(arguments);
-
-		Ext.getCmp('dp-devise-resume-form').load({
-			url : 'devise/share/getModuleResumeById?resumeid=' + me.resumeid
-		});
-	}
-
-});
 /**
  * 模具加工模块
  */
 Ext.define('Deviser.DeviserProject', {
 	extend : 'Ext.ux.desktop.Module',
 
-	requires : [ 'Ext.tab.Panel', 'Portlet.PortalPanel' ],
+	requires : [ 'Ext.tab.Panel', 'Portlet.PortalPanel', 'Deviser.ModuleDeviseInfo' ],
 
 	id : 'deviser-project-win',
 	tabpanelId : 'deviser-project-tabpanel',
@@ -476,8 +155,8 @@ Ext.define('Deviser.DeviserProject', {
 							id : me.tabpanelId,
 							region : 'center',
 							activeTab : 0,
-							items : [ new Portlet.PortalPanel({ 
-								//xtype : 'moduleportalpanel',
+							items : [ new Portlet.PortalPanel({
+								// xtype : 'moduleportalpanel',
 								title : '首页',
 								iconCls : 'house-16',
 								// items : portletItems
@@ -676,7 +355,7 @@ Ext.define('Deviser.DeviserProject', {
 										id : 'dp-devise-module-list',
 										fields : [ 'id', 'modulebarcode', 'shortname', 'moduleclass', 'guestcode', 'productname', 'modulecode',
 												'ecnt', 'imagepath', 'unitextrac', 'takeon', 'deviser', 'pictureurl', 'remark', 'ensure',
-												'workpressure', 'groupid', 'groupname', {
+												'workpressure', 'groupid', 'groupname', 'resumestate', {
 													name : 'startdate',
 													type : 'date'
 												}, {
@@ -706,6 +385,7 @@ Ext.define('Deviser.DeviserProject', {
 											var gcode = record.get('guestcode');
 											var dimension = Monitor.ratioRect(0.67);
 											new Deviser.ModuleDeviseInfo({
+												modulebarcode : record.get('modulebarcode'),
 												resumeid : record.get('id'),
 												width : dimension.x,
 												height : dimension.y,
@@ -753,19 +433,12 @@ Ext.define('Deviser.DeviserProject', {
 										dataIndex : 'modulecode',
 										width : 100,
 										renderer : me.initCellContent
-									},
-									// {
-									// text : '取数',
-									// dataIndex : 'unitextrac',
-									// width : 60,
-									// renderer : me.initCellContent
-									// }, {
-									// text : '吨位(T)',
-									// dataIndex : 'workpressure',
-									// width : 60,
-									// renderer : me.initCellContent
-									// },
-									{
+									}, {
+										text : '加工状态',
+										dataIndex : 'resumestate',
+										width : 70,
+										renderer : me.initCellContent
+									}, {
 										text : '项目组别',
 										dataIndex : 'groupname',
 										width : 80,

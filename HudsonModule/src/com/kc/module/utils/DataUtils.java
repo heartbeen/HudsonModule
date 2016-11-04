@@ -582,7 +582,8 @@ public class DataUtils {
     }
 
     /**
-     * 对集合数据进行二层树形结构分类
+     * 对集合数据进行二层树形结构分类<br>
+     * BUG 一个部品多个零件时只能查询其中的一个 |2016-10-19 ROCK
      * 
      * @param list
      * @param mainField
@@ -591,7 +592,7 @@ public class DataUtils {
      *            主干所要显示的字段
      * @return
      */
-    public static <E extends ModelFinal<E>> Map<Record, List<E>> modelTwoLayout(List<E> list, String mainField, String... correlation) {
+    public static <E extends ModelFinal<E>> Map<Record, List<E>> modelTwoLayout(List<E> list, String mainField, String[] must, String[] consider) {
         Map<Record, List<E>> partMap = new LinkedHashMap<Record, List<E>>();
 
         Map<Object, Record> swt = new HashMap<Object, Record>();
@@ -608,8 +609,16 @@ public class DataUtils {
             if (!swt.containsKey(partbarcode)) {
                 Record record = new Record();
 
-                for (String field : correlation) {
-                    record.set(field, mp.get(field));
+                if (must != null) {
+                    for (String field : must) {
+                        record.set(field, mp.get(field));
+                    }
+                }
+
+                if (consider != null) {
+                    for (String field : consider) {
+                        record.set(field, mp.get(field));
+                    }
                 }
 
                 mplist = new ArrayList<E>();
@@ -622,8 +631,7 @@ public class DataUtils {
                 mplist = partMap.get(swt.get(partbarcode));
             }
 
-            // 移除列
-            mp.remove(correlation);
+            mp.remove(must);
             // 新增子项
             mplist.add(mp);
         }
@@ -721,6 +729,7 @@ public class DataUtils {
 
             json.append("\"moduleResumeId\":\"").append(r.get("MODULERESUMEID")).append("\",");
             json.append("\"partBarCode\":\"").append(r.get("PARTBARCODE")).append("\",");
+            json.append("\"partcode\":\"").append(r.get("PARTCODE")).append("\",");
             json.append("\"text\":\"").append(r.get("PARTCODE"));
             json.append("(").append(cnames == null ? "" : cnames);
             json.append("[").append(r.get("QUANTITY")).append("件])\",");

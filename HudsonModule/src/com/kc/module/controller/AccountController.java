@@ -13,10 +13,12 @@ import javax.servlet.http.HttpSession;
 import com.jfinal.aop.Before;
 import com.jfinal.aop.ClearInterceptor;
 import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Db;
 import com.kc.module.interceptor.validator.LoginValidator;
 import com.kc.module.model.Account;
 import com.kc.module.model.Authority;
 import com.kc.module.model.ProjectModule;
+import com.kc.module.transaction.AlertUserInfoIAtom;
 import com.kc.module.utils.ConstUtils;
 import com.kc.module.utils.ControlUtils;
 import com.kc.module.utils.StringUtils;
@@ -145,5 +147,16 @@ public class AccountController extends Controller {
             redirect("/");
         }
 
+    }
+
+    public void alterUserInfo() {
+        AlertUserInfoIAtom auii = new AlertUserInfoIAtom();
+        auii.setController(this);
+
+        boolean success = Db.tx(auii);
+        setAttr("success", success);
+        setAttr("msg", auii.getMsg());
+
+        renderJson();
     }
 }

@@ -1,7 +1,5 @@
 package com.kc.module.interceptor.validator;
 
-import javax.servlet.http.HttpSession;
-
 import com.jfinal.core.Controller;
 import com.jfinal.validate.Validator;
 import com.kc.module.utils.ConstUtils;
@@ -18,31 +16,6 @@ public class CraftPlanValidator extends Validator {
     protected void validate(Controller c) {
         String key = getActionKey();
         String errorMessage = "您提交的数据不全!";
-        // 验证提交的排程时间
-        if (key.indexOf("craftTime") > 0) {
-            HttpSession session = c.getSession(false);
-
-            if (session.getAttribute(ConstUtils.REQUEST_TIME_ATTR) == null) {
-                session.setAttribute(ConstUtils.REQUEST_TIME_ATTR, System.currentTimeMillis());
-            } else {
-                long up = (Long) session.getAttribute(ConstUtils.REQUEST_TIME_ATTR);
-
-                if (System.currentTimeMillis() - up < ConstUtils.REQUEST_TIME) {
-                    session.setAttribute(ConstUtils.REQUEST_TIME_ATTR, System.currentTimeMillis());
-                    addError("msg", "您的操作太快!");
-                    return;
-                }
-                session.setAttribute(ConstUtils.REQUEST_TIME_ATTR, System.currentTimeMillis());
-            }
-
-            // validateMultiple(c, "msg", errorMessage, "time", "duration");
-            validateRequiredString("planId", "msg", errorMessage);
-            validateRequiredString("interval", "msg", errorMessage);
-            validateRequiredString("isNeed", "msg", errorMessage);
-            validateRegex("timeLoc", "[sedSED]", "msg", errorMessage);
-
-            return;
-        }
 
         // 查询工艺集合验证
         if (key.indexOf("craftSet") > 0) {
@@ -76,15 +49,12 @@ public class CraftPlanValidator extends Validator {
         // 验证工时
         if (key.indexOf("evaluateTime") > 0) {
             validateRequiredString("mes.id", "msg", errorMessage);
-            //validateInteger("mes.evaluate", 0, 9999999, "msg", errorMessage);
+            // validateInteger("mes.evaluate", 0, 9999999, "msg", errorMessage);
             return;
         }
     }
 
-    protected void validateMultiple(Controller c,
-                                    String errorKey,
-                                    String errorMessage,
-                                    String... fields) {
+    protected void validateMultiple(Controller c, String errorKey, String errorMessage, String... fields) {
 
         String value;
         for (String r : fields) {
@@ -107,11 +77,7 @@ public class CraftPlanValidator extends Validator {
      * @param include
      *            值数组
      */
-    protected void validateInclude(Controller c,
-                                   String field,
-                                   String errorKey,
-                                   String errorMessage,
-                                   String... include) {
+    protected void validateInclude(Controller c, String field, String errorKey, String errorMessage, String... include) {
 
         String value = c.getPara(field);
         if (value == null || "".equals(value.trim())) {

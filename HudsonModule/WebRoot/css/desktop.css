@@ -392,3 +392,8 @@ div.ux-taskbar div.x-toolbar {
 .project-child-item-select {
 	color: white;
 }
+
+.logo-authcut {
+	background-image: url(../images/auth48x48.png);
+	color: #000
+}

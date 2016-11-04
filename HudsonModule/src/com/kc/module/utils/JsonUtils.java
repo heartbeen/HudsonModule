@@ -662,4 +662,37 @@ public class JsonUtils {
             return null;
         }
     }
+    
+    /**
+     * 将BEAN转换为JSON
+     * 
+     * @param bean
+     * @return
+     */
+    public static <T> String bean2Json(T bean) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(bean);
+        }
+        catch (Exception e) {
+            return "{}";
+        }
+
+    }
+
+    /**
+     * 将LIST转换为JSON
+     * 
+     * @param t
+     * @return
+     */
+    public static <T> String listToJson(List<T> t) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(t);
+        }
+        catch (Exception e) {
+            return "[]";
+        }
+    }
 }

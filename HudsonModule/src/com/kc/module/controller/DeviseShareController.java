@@ -206,4 +206,11 @@ public class DeviseShareController extends Controller {
 
         renderJson(dfqe.extract());
     }
+
+    /**
+     * 通过模具唯一号查找设计履历信息
+     */
+    public void getDeviseResumeByModule() {
+        renderJson(DesignResumeRecord.dao.getDeviseResumeByModuleCode(getPara("modulebarcode")));
+    }
 }

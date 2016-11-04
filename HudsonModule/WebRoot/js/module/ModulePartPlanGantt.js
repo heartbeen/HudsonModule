@@ -15,6 +15,7 @@ Ext.define("Module.ModulePartPlanGantt", {
 	cascadeChanges : true,
 	readOnly : false,// 是否为只读
 	crafts : null,
+	stripeRows : true,
 	format : 'Y-m-d G',
 	craftPlanMenu : null,
 
@@ -26,10 +27,10 @@ Ext.define("Module.ModulePartPlanGantt", {
 		var me = this;
 
 		Ext.apply(me, {
-			title : '排工单',
+			title : '计划排程信息',
 			lockedGridConfig : {
-				width : 480,
-				title : '工艺',
+				width : 420,
+				title : '工艺排程',
 				collapsible : true,
 				listeners : {
 					itemcontextmenu : me.itemContextMenu,
@@ -67,6 +68,11 @@ Ext.define("Module.ModulePartPlanGantt", {
 					}
 				}
 			},
+
+			tbar : [ {
+				text : '更新',
+				iconCls : 'save-16'
+			} ],
 
 			lockedViewConfig : {
 				getRowClass : function(rec) {
@@ -120,7 +126,7 @@ Ext.define("Module.ModulePartPlanGantt", {
 				header : '加工工艺',
 				sortable : true,
 				dataIndex : 'Name',
-				width : 220,
+				width : 180,
 				renderer : function(v, meta, r) {
 					if (!r.data.leaf) {
 						meta.tdCls = 'sch-gantt-parent-cell';
@@ -130,35 +136,36 @@ Ext.define("Module.ModulePartPlanGantt", {
 
 					return (v ? '<b><font color = ' + (remark ? 'red' : 'green') + '>|' + v + '|</font></b>' : v);
 				},
-				items : Ext.create('Project.component.GanttTaskFilterField', {
-					store : me.taskStore
-				}),
+				// items : Ext.create('Project.component.GanttTaskFilterField',
+				// {
+				// store : me.taskStore
+				// }),
 				sortableColumns : false
 			}, {
 				xtype : 'startdatecolumn',
 				text : '开工时间',
 				format : me.format,
-				width : 115,
+				width : 105,
 				sortableColumns : false
 			}, {
 				hidden : true,
 				xtype : 'enddatecolumn',
 				text : '完工时间',
 				format : me.format,
-				width : 115,
+				width : 105,
 				sortableColumns : false
 			}, {
 				xtype : 'durationcolumn',
 				text : '时间<br>跨度',
-				width : 55,
+				width : 50,
 				renderer : function(value) {
 					return value;
 				},
 				sortableColumns : false
 			}, {
 				xtype : 'numbercolumn',
-				text : '加工<br>工时',
-				width : 55,
+				text : '预计<br>工时',
+				width : 50,
 				dataIndex : 'evaluate',
 				editor : {
 					xtype : 'numberfield',
@@ -181,7 +188,7 @@ Ext.define("Module.ModulePartPlanGantt", {
 	},
 
 	taskDrop : function(gantt, taskRecord, eOpts) {
-		console.log('taskdrop');
+		// console.log('taskdrop');
 	},
 
 	containerContextMenu : function(grid, e) {
@@ -199,14 +206,6 @@ Ext.define("Module.ModulePartPlanGantt", {
 	 * 根据的不同弹出相应的菜单
 	 */
 	craftMenuShow : function(gantt, record, e) {
-
-		var parent = Ext.getCmp('Module.ModulePartPlan');
-
-		console.info(parent.isMainPart);
-		if (!parent.isMainPart) {// 如果为单工件就不能增加或删除工艺
-			return;
-		}
-
 		new Ext.create('Module.CraftPlanMenu', {
 			craftItem : App.getModuleCraftMenu('public/getClassifyCrafts', 0),
 			grid : gantt,
@@ -220,162 +219,107 @@ Ext.define("Module.ModulePartPlanGantt", {
 	cellClick : function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
 		var me = grid.up('ganttpanel');
 
-		// 操作间隔不能超700毫秒,否则不产生动作
-		if (new Date().getTime() - me.currentTimeMillis < 500) {
-			me.currentTimeMillis = new Date().getTime();
-			me.isHasListeners = false;
-
+		// 如果暂存的控件不为空则清除BLUR事件
+		if (me.startColumn != null) {
 			me.startColumn.editor.removeListener('blur', me.timeSelect);
-			me.endColumn.editor.removeListener('blur', me.timeSelect);
+			// me.endColumn.editor.removeListener('blur', me.timeSelect);
 			me.durationColumn.editor.removeListener('blur', me.durationSelect);
 			me.evaluateColumn.getEditor().removeListener('blur', me.evaluateSelect);
-
-			// showInfo("您的操作过快!");
-
-			return;
 		} else {
-			me.currentTimeMillis = new Date().getTime();
-		}
-
-		// me.updataCraftWorkload(record);
-
-		if (cellIndex == 0) {
-			return;
-		}
-
-		if (me.startColumn == null) {
 			me.startColumn = me.columns[1];
-			me.endColumn = me.columns[2];
+			// me.endColumn = me.columns[2];
 			me.durationColumn = me.columns[3];
 			me.evaluateColumn = me.columns[4];
-
-			me.startColumn.editor.timeLoc = 's';
-
-			me.endColumn.editor.timeLoc = 'e';
-			me.durationColumn.editor.timeLoc = 'd';
 		}
 
-		if (!me.isHasListeners) {
-			me.isHasListeners = true;
-			me.startColumn.editor.on('blur', me.timeSelect);
-			me.endColumn.editor.on('blur', me.timeSelect);
-			me.durationColumn.editor.on('blur', me.durationSelect);
-			me.evaluateColumn.getEditor().on('blur', me.evaluateSelect);
-		}
+		me.startColumn.editor.on('blur', me.timeSelect);
+		// me.endColumn.editor.on('blur', me.timeSelect);
+		me.durationColumn.editor.on('blur', me.timeSelect);
+		me.evaluateColumn.getEditor().on('blur', me.timeSelect);
 
-		// record.setStartDate(me.craftStartDate);
+		me.startColumn.timeCol = 's';
+		me.durationColumn.timeCol = 'd';
+		me.evaluateColumn.timeCol = 'e';
 
-		me.nowPlanIndex = rowIndex;
-
-		function setDisabled(abled) {
-			me.startColumn.editor.setDisabled(abled);
-			me.endColumn.editor.setDisabled(abled);
-			me.durationColumn.editor.setDisabled(abled);
-
-			if (abled) {
-				Fly.msg('提示', '请安排上一个排程!');
-			}
-		}
-
-		if (rowIndex > 0) {
-			// 当上一个工艺没有安排时间时,当前选择的工艺就不能安排时间
-			var upRecord = record.parentNode.childNodes[rowIndex - 1];
-			if (upRecord.data.StartDate && upRecord.data.EndDate) {
-
-				// me.startColumn.editor.setMinValue(upRecord.data.EndDate);
-
-				if (!record.getStartDate()) {
-
-					record.setStartDate(upRecord.data.EndDate);
-				}
-
-				setDisabled(false);
-			} else {
-				// me.startColumn.editor.setMinValue(me.craftStartDate);
-
-				setDisabled(true);
-			}
-		} else {
-			// me.startColumn.editor.setMinValue(me.craftStartDate);
-			setDisabled(false);
-		}
-
-		ttt = record;
-
+		// 选中查询记录
 		me.clickCraftTaskItem = record;
-		me.startTime = record.data.StartDate;
-		me.endTime = record.data.EndDate;
-		me.durationTime = record.data.Duration;
-		me.planId = record.data.id;
-		me.evaluateTiem = record.data.evaluate;
 	},
-
-	isHasListeners : false,
-	currentTimeMillis : new Date().getTime(),
-	planId : null,
-	startColumn : null,
-	endColumn : null,
-	durationColumn : null,
-	startTime : null,// 用来判断是否有改变日期
-	endTime : null,// 用来判断是否有改变日期
-	durationTime : null,
+	startColumn : null,// 开始时间
+	endColumn : null,// 结束时间
+	evaluateColumn : null,// 预估时间
+	durationColumn : null,// 时间间隔
 	clickCraftTaskItem : null,// 当前点击的工艺
-	nowPlanIndex : null,
-	evaluateTiem : null,
 
 	timeSelect : function(field, the, eOpts) {
 		var me = field.up('ganttpanel');
+		var evaluate = (field.name == 'evaluate' ? field.getValue() : me.clickCraftTaskItem.get('evaluate'));
 
-		var time = field.getValue();
-		// 只判断该排程时间是否为空即可，为空则返回 |160418 ROCK
-		if (time == null) {
-			return;
-		}
+		App.Progress('正在修改中...', '修改排程');
 
-		// 如果时间没有改变时就不进行提交
-		// if ((field.timeLoc == 's' && me.startTime == time) || (field.timeLoc
-		// == 'e' && me.endTime == time)) {
-		// return;
-		// }
-
-		// 时间改变时,进行保存
-		me.saveCraftPlanTime(field, me);
+		Ext.Ajax.request({
+			url : 'module/schedule/craftTime',
+			params : {
+				sid : me.clickCraftTaskItem.get('id'),
+				start : Ext.Date.format(me.clickCraftTaskItem.get('StartDate'), 'Y-m-d H:i:s'),
+				duration : Arith.toIntRef(me.clickCraftTaskItem.get('Duration'), 0),
+				evaluate : Arith.toIntRef(evaluate, 0)
+			},
+			success : function(response) {
+				App.ProgressHide();
+				var res = JSON.parse(response.responseText);
+				App.InterPath(res, function() {
+					if (res.success) {
+						me.clickCraftTaskItem.commit();
+						showSuccess(res.msg);
+					} else {
+						me.clickCraftTaskItem.reject();
+						showError(res.msg);
+					}
+				});
+			},
+			failure : function(response) {
+				App.ProgressHide();
+				me.clickCraftTaskItem.reject();
+				showError('连接服务器失败');
+				return;
+			}
+		});
 	},
-
-	/**
-	 * 时间跨度变更方法
-	 */
-	durationSelect : function(field, the, eOpts) {
-		var me = field.up('ganttpanel');
-		var duration = field.getValue();
-		// 如果时间没有改变时就不进行提交
-		if (me.durationTime == duration) {
-			return;
-		}
-
-		me.saveCraftDuration(field, me);
-
-	},
-
-	/**
-	 * 工件加工时长变更方法
-	 */
-	evaluateSelect : function(field, the, eOpts) {
-		var me = field.up('ganttpanel');
-		var evaluate = field.getValue();
-		// 如果时间没有改变时就不进行提交
-		if (me.evaluateTiem == evaluate) {
-			return;
-		}
-
-		if (evaluate > me.durationTime) {
-			field.setValue(me.evaluateTiem);
-			Fly.msg('错误', '加工时长不能大于时间跨度');
-			return;
-		}
-
-		me.saveCraftEvaluate(field, me);
-	},
+	//
+	// /**
+	// * 时间跨度变更方法
+	// */
+	// durationSelect : function(field, the, eOpts) {
+	// var me = field.up('ganttpanel');
+	// var duration = field.getValue();
+	// // 如果时间没有改变时就不进行提交
+	// if (me.durationTime == duration) {
+	// return;
+	// }
+	//
+	// me.saveCraftDuration(field, me);
+	//
+	// },
+	//
+	// /**
+	// * 工件加工时长变更方法
+	// */
+	// evaluateSelect : function(field, the, eOpts) {
+	// var me = field.up('ganttpanel');
+	// var evaluate = field.getValue();
+	// // 如果时间没有改变时就不进行提交
+	// if (me.evaluateTiem == evaluate) {
+	// return;
+	// }
+	//
+	// if (evaluate > me.durationTime) {
+	// field.setValue(me.evaluateTiem);
+	// Fly.msg('错误', '加工时长不能大于时间跨度');
+	// return;
+	// }
+	//
+	// me.saveCraftEvaluate(field, me);
+	// },
 
 	/**
 	 * 更新工作量图表
@@ -413,204 +357,142 @@ Ext.define("Module.ModulePartPlanGantt", {
 			console.error('工艺工作量面板没有找到!');
 		}
 	},
-
-	/**
-	 * 保存工艺排程时间
-	 * 
-	 * @param field
-	 * @param craftBarcode
-	 * @param duration
-	 */
-	saveCraftDuration : function(field, me) {
-		var duration = field.getValue();
-		var interval = (duration - me.durationTime) * 3600000;
-		var isNeed = me.durationTime != null;
-
-		Ext.Ajax.request({
-			url : 'module/schedule/craftTime',
-			params : {
-				duration : duration,
-				timeLoc : field.timeLoc,
-				planId : me.planId,
-				interval : interval,
-				isNeed : me.durationTime != null
-			},
-			success : function(response) {
-				var res = JSON.parse(response.responseText);
-
-				App.InterPath(res, function() {
-
-					if (res.success) {
-						showSuccess(res.msg);
-
-						if (isNeed) {
-							me.moveCraftPlan(me.clickCraftTaskItem.parentNode, me.nowPlanIndex, interval);
-						}
-
-						// me.updataCraftWorkload();// 更新工艺工作量
-						me.clickCraftTaskItem.commit();
-						// me.craftStartDate =
-						// me.clickCraftTaskItem.data.EndDate;
-						// 用于下一个工艺的开始时间
-						// var nextDate = new Date(me.craftStartDate.getTime() +
-						// interval);
-
-					} else {
-						showError(res.msg);
-						me.restore(field, me, false);
-					}
-
-				});
-			},
-			failure : function(response) {
-				App.Error(response);
-				me.restore(field, me, false);
-			}
-		});
-	},
-
-	/**
-	 * 保存工件加工工时
-	 */
-	saveCraftEvaluate : function(field, me) {
-		var evaluate = field.getValue();
-		Ext.Ajax.request({
-			url : 'module/schedule/evaluateTime',
-			params : {
-				"mes.id" : me.planId,
-				"mes.evaluate" : evaluate
-			},
-			success : function(response) {
-				var res = JSON.parse(response.responseText);
-
-				App.InterPath(res, function() {
-
-					if (res.success) {
-						Fly.msg('工时', res.msg);
-
-						// me.updataCraftWorkload();// 更新工艺工作量
-						me.clickCraftTaskItem.commit();
-
-					} else {
-						Fly.msg('工时', '<span style="color:red">' + res.msg + '</span>');
-						me.restore(field, me, false);
-					}
-
-				});
-			},
-			failure : function(response) {
-				App.Error(response);
-				me.restore(field, me, false);
-			}
-		});
-	},
-	/**
-	 * 保存工艺排程时间
-	 * 
-	 * @param field
-	 * @param craftBarcode
-	 * @param duration
-	 */
-	saveCraftPlanTime : function(field, me) {
-
-		var time = field.getRawValue();
-		var rtime = field.getValue();
-
-		if (me.clickCraftTaskItem.getIndex() > 0) {
-			var up = me.clickCraftTaskItem.parentNode.childNodes[me.clickCraftTaskItem.getIndex() - 1];
-
-			if (up.getEndDate() > rtime) {
-				showError("当前工艺的开工时间不能超过前一工艺的完成时间");
-				me.restore(field, me, true);
-				return;
-			}
-		}
-
-		var interval = field.timeLoc == 's' ? rtime - me.startTime : rtime - me.endTime;
-		// 两种情况:1.时间为新设定,2.时间为调整,如果时间为调整时后续的工艺时间才要同时调整
-		var isNeed = field.timeLoc == 's' ? me.startTime != null : me.endTime != null;
-
-		Ext.Ajax.request({
-			url : 'module/schedule/craftTime',
-			params : {
-				time : time,
-				timeLoc : field.timeLoc,
-				// 得到时间变动的间隔
-				interval : interval,
-				planId : me.planId,
-				isNeed : isNeed
-
-			},
-			success : function(response) {
-				var res = JSON.parse(response.responseText);
-
-				App.InterPath(res, function() {
-
-					if (res.success) {
-						showSuccess(res.msg);
-
-						if (isNeed) {
-							me.moveCraftPlan(me.clickCraftTaskItem.parentNode, me.nowPlanIndex, interval);
-						}
-
-						// me.updataCraftWorkload();// 更新工艺工作量
-						me.clickCraftTaskItem.commit();
-
-					} else {
-						showError(res.msg);
-						me.restore(field, me, true);
-					}
-				});
-			},
-			failure : function(response) {
-				App.Error(response);
-				me.restore(field, me, true);
-			}
-		});
-	},
-
-	/**
-	 * 没有权限或更新不成功时数据还原
-	 * 
-	 * @param field
-	 * @param me
-	 * @param isTime
-	 *            更新的是时间值
-	 */
-	restore : function(field, me, isTime) {
-		if (isTime) {
-			if (field.timeLoc == 's')
-				me.clickCraftTaskItem.setStartDate(me.startTime);
-
-			if (field.timeLoc == 'e') {
-				me.clickCraftTaskItem.setEndDate(me.endTime);
-				me.clickCraftTaskItem.setDuration(me.durationTime);
-			}
-		} else {
-
-			me.clickCraftTaskItem.setEndDate(me.endTiem);
-			me.clickCraftTaskItem.setDuration(me.durationTime);
-		}
-
-	},
-
-	/**
-	 * 时间调整时,那么当前工艺之后的工艺时间也要相应调整
-	 * 
-	 * @param parentNode
-	 * @param index
-	 * @param interval
-	 */
-	moveCraftPlan : function(parentNode, index, interval) {
-		var record;
-		for (var i = index + 1; i < parentNode.childNodes.length; i++) {
-			record = parentNode.childNodes[i];
-			if (record.getStartDate()) {
-				record.setStartDate(new Date(record.getStartDate().getTime() + interval));
-			}
-
-		}
-	}
+// ,
+//
+// /**
+// * 保存工艺排程时间
+// *
+// * @param field
+// * @param craftBarcode
+// * @param duration
+// */
+// saveCraftDuration : function(field, me) {
+// var duration = field.getValue();
+// var interval = (duration - me.durationTime) * 3600000;
+// var isNeed = me.durationTime != null;
+//
+// Ext.Ajax.request({
+// url : 'module/schedule/craftTime',
+// params : {
+// duration : duration,
+// timeLoc : field.timeLoc,
+// planId : me.planId,
+// interval : interval,
+// isNeed : me.durationTime != null
+// },
+// success : function(response) {
+// var res = JSON.parse(response.responseText);
+//
+// App.InterPath(res, function() {
+//
+// if (res.success) {
+// showSuccess(res.msg);
+//
+// if (isNeed) {
+// me.moveCraftPlan(me.clickCraftTaskItem.parentNode, me.nowPlanIndex,
+// interval);
+// }
+//
+// // me.updataCraftWorkload();// 更新工艺工作量
+// me.clickCraftTaskItem.commit();
+// // me.craftStartDate =
+// // me.clickCraftTaskItem.data.EndDate;
+// // 用于下一个工艺的开始时间
+// // var nextDate = new Date(me.craftStartDate.getTime() +
+// // interval);
+//
+// } else {
+// showError(res.msg);
+// me.restore(field, me, false);
+// }
+//
+// });
+// },
+// failure : function(response) {
+// App.Error(response);
+// me.restore(field, me, false);
+// }
+// });
+// },
+//
+// /**
+// * 保存工件加工工时
+// */
+// saveCraftEvaluate : function(field, me) {
+// var evaluate = field.getValue();
+// Ext.Ajax.request({
+// url : 'module/schedule/evaluateTime',
+// params : {
+// "mes.id" : me.planId,
+// "mes.evaluate" : evaluate
+// },
+// success : function(response) {
+// var res = JSON.parse(response.responseText);
+//
+// App.InterPath(res, function() {
+//
+// if (res.success) {
+// Fly.msg('工时', res.msg);
+//
+// // me.updataCraftWorkload();// 更新工艺工作量
+// me.clickCraftTaskItem.commit();
+//
+// } else {
+// Fly.msg('工时', '<span style="color:red">' + res.msg + '</span>');
+// me.restore(field, me, false);
+// }
+//
+// });
+// },
+// failure : function(response) {
+// App.Error(response);
+// me.restore(field, me, false);
+// }
+// });
+// },
+//
+// /**
+// * 没有权限或更新不成功时数据还原
+// *
+// * @param field
+// * @param me
+// * @param isTime
+// * 更新的是时间值
+// */
+// restore : function(field, me, isTime) {
+// if (isTime) {
+// if (field.timeLoc == 's')
+// me.clickCraftTaskItem.setStartDate(me.startTime);
+//
+// if (field.timeLoc == 'e') {
+// me.clickCraftTaskItem.setEndDate(me.endTime);
+// me.clickCraftTaskItem.setDuration(me.durationTime);
+// }
+// } else {
+//
+// me.clickCraftTaskItem.setEndDate(me.endTiem);
+// me.clickCraftTaskItem.setDuration(me.durationTime);
+// }
+//
+// },
+//
+// /**
+// * 时间调整时,那么当前工艺之后的工艺时间也要相应调整
+// *
+// * @param parentNode
+// * @param index
+// * @param interval
+// */
+// moveCraftPlan : function(parentNode, index, interval) {
+// var record;
+// for (var i = index + 1; i < parentNode.childNodes.length; i++) {
+// record = parentNode.childNodes[i];
+// if (record.getStartDate()) {
+// record.setStartDate(new Date(record.getStartDate().getTime() + interval));
+// }
+//
+// }
+// }
 });
 
 Ext.define('Module.CraftPlanMenu', {
@@ -620,28 +502,29 @@ Ext.define('Module.CraftPlanMenu', {
 		var me = this;
 
 		for ( var i in me.craftItem) {
-			me.craftItem[i].handler = me.addTaskAction;
+			me.craftItem[i].handler = me.taskAppend;
 		}
 
 		Ext.applyIf(me, {
 			items : [ {
 				xtype : 'menuitem',
-				text : '向前增加',
-				iconCls : 'document-import-16',
+				disabled : me.record,
+				text : '增加工艺',
+				iconCls : 'application_form_add-16',
 				menu : {
 					xtype : 'menu',
-					direction : 'u',
+					// direction : 'u',
 					parent : me,
 					items : me.craftItem
 				}
 			}, {
 				xtype : 'menuitem',
-				text : '向后增加',
+				text : '插入工艺',
 				disabled : !me.record,
-				iconCls : 'document-export-16',
+				iconCls : 'application_get-16',
 				menu : {
 					xtype : 'menu',
-					direction : 'd',
+					// direction : 'd',
 					parent : me,
 					items : me.craftItem
 				}
@@ -651,13 +534,21 @@ Ext.define('Module.CraftPlanMenu', {
 				xtype : 'menuitem',
 				disabled : !me.record,
 				text : '删除工艺',
-				iconCls : 'app-ruin-16',
+				iconCls : 'cancel-16',
 				scope : me,
 				handler : me.onDeletePlanTask
 			} ]
 		});
 
 		me.callParent(arguments);
+	},
+
+	taskAppend : function(item) {
+
+		var craftId = item.craftId.split('-')[2];
+
+		var mainMenu = item.parentMenu.parent;
+		mainMenu.submitCraftPlan(mainMenu.record, craftId);
 	},
 
 	/**
@@ -682,25 +573,39 @@ Ext.define('Module.CraftPlanMenu', {
 	 */
 	onDeletePlanTask : function() {
 		var me = this;
-		var a = me.grid.getSelectionModel().selected;
+		var delRow = me.grid.getSelectionModel().getSelection();
 		var parent = Ext.getCmp('Module.ModulePartPlan');
 
+		App.Progress('正在删除排程...', '排程删除');
 		Ext.Ajax.request({
 			url : 'module/schedule/removeCraftPlan',
 			params : {
-				id : a.items[0].data.id
-
+				sid : delRow[0].data.id
 			},
 			success : function(response) {
-				var res = JSON.parse(response.responseText);
+				App.ProgressHide();
 
+				var res = JSON.parse(response.responseText);
 				App.InterPath(res, function() {
 					if (res.success) {
-						me.grid.taskStore.remove(a.getRange());
 
-						if (me.grid.taskStore.getCount() == 0) {
+						if (!res.gantt.length) {
 							parent.selectPartRecord.set('cls', 'craft-schedule-noexits');
 						}
+
+						for ( var x in res.gantt) {
+
+							res.gantt[x].Name = res.gantt[x].name;
+							res.gantt[x].PercentDone = res.gantt[x].percentDone;
+
+							res.gantt[x].StartDate = res.gantt[x].startDate;
+							res.gantt[x].EndDate = res.gantt[x].endDate;
+
+							res.gantt[x].Duration = res.gantt[x].duration;
+							res.gantt[x].DurationUnit = res.gantt[x].durationUnit;
+						}
+
+						me.grid.taskStore.loadData(res.gantt);
 
 						showSuccess(res.msg);
 					} else {
@@ -709,50 +614,10 @@ Ext.define('Module.CraftPlanMenu', {
 				});
 			},
 			failure : function(response) {
-				App.Error(response);
+				App.ProgressHide();
+				App.Error('请检查网络连接');
 			}
 		});
-
-		// Ext.MessageBox.show({
-		// title : '排程',
-		// msg : '你确定要删除->' + a.items[0].data.Name + " 这个工艺吗?",
-		// buttons : Ext.MessageBox.YESNO,
-		// buttonText : {
-		// yes : "确定",
-		// no : "取消"
-		// },
-		// fn : function(buttonId) {
-		// if (buttonId == 'yes') {
-		// Ext.Ajax.request({
-		// url : 'module/schedule/removeCraftPlan',
-		// params : {
-		// id : a.items[0].data.id
-		//
-		// },
-		// success : function(response) {
-		// var res = JSON.parse(response.responseText);
-		//
-		// App.InterPath(res, function() {
-		// if (res.success) {
-		// me.grid.taskStore.remove(a.getRange());
-		//
-		// if (me.grid.taskStore.getCount() == 0) {
-		// parent.selectPartRecord.set('cls', 'craft-schedule-noexits');
-		// }
-		//
-		// showSuccess(res.msg);
-		// } else {
-		// showError(res.msg);
-		// }
-		// });
-		// },
-		// failure : function(response) {
-		// App.Error(response);
-		// }
-		// });
-		// }
-		// }
-		// });
 	},
 
 	/**
@@ -760,11 +625,7 @@ Ext.define('Module.CraftPlanMenu', {
 	 */
 	addTaskAction : function(item) {
 		var upMenu = item.up('menu');
-		if (upMenu.direction == 'u') {
-			upMenu.parent.addTaskAboveAction(item.text, item.craftId.split('-')[2]);
-		} else {
-			upMenu.parent.addTaskBelowAction(item.text, item.craftId.split('-')[2]);
-		}
+		upMenu.parent.addTaskAboveAction(item.text, item.craftId.split('-')[2]);
 	},
 
 	/**
@@ -810,16 +671,7 @@ Ext.define('Module.CraftPlanMenu', {
 	 * @param a
 	 */
 	addTaskBelow : function(a, craftId) {
-		var b = this.record;
-		if (b) {
-			b.addTaskBelow(a);
-
-		} else {
-			this.grid.taskStore.getRootNode().appendChild(a);
-		}
-
 		this.submitCraftPlan(a, craftId);
-
 	},
 
 	/**
@@ -832,34 +684,43 @@ Ext.define('Module.CraftPlanMenu', {
 		var me = this;
 		var parent = Ext.getCmp('Module.ModulePartPlan');
 
+		App.Progress('正在安排中...', '排程操作');
 		Ext.Ajax.request({
 			url : 'module/schedule/createCraftPlan',
 			params : {
-				"mes.moduleResumeId" : parent.moduleResumeId,
-				"mes.craftId" : craftId,
-				"mes.rankNum" : plan.data.index,
-				"partBarCode" : parent.partBarCode,
-				"partListId" : parent.partListBarcodes,
-				"isAll" : parent.isAll,
-				"isEnd" : this.grid.taskStore.getCount() - 1 == plan.data.index
-
+				craftid : craftId,
+				sid : !plan ? plan : plan.data.id,
+				partbarlistcode : parent.consult.partbarcode
 			},
 			success : function(response) {
+				App.ProgressHide();
+
 				var res = JSON.parse(response.responseText);
 
 				App.InterPath(res, function() {
 					if (res.success) {
-						plan.set("id", res.schId);
-						plan.set("craftId", craftId);
+						if (res.gantt.length) {
+
+							for ( var x in res.gantt) {
+								res.gantt[x].Name = res.gantt[x].name;
+								res.gantt[x].PercentDone = res.gantt[x].percentDone;
+
+								res.gantt[x].StartDate = res.gantt[x].startDate;
+								res.gantt[x].EndDate = res.gantt[x].endDate;
+
+								res.gantt[x].Duration = res.gantt[x].duration;
+								res.gantt[x].DurationUnit = res.gantt[x].durationUnit;
+							}
+
+							parent.gantt.taskStore.loadData(res.gantt);
+						}
 
 						showSuccess(res.msg);
 
 						// 标记工件已安排排程
 						parent.selectPartRecord.set('cls', 'craft-schedule-exits');
 					} else {
-
 						showError(res.msg);
-						me.grid.taskStore.remove(plan);
 					}
 				});
 			},

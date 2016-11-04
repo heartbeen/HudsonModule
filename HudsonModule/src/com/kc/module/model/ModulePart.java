@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
+import com.kc.module.utils.StringUtils;
 
 public class ModulePart extends ModelFinal<ModulePart> {
 
@@ -30,15 +31,20 @@ public class ModulePart extends ModelFinal<ModulePart> {
      *            模具履历ID
      * @return
      */
-    public List<ModulePart> moduleResumePart(String moduleResumeId) {
+    public List<ModulePart> moduleResumePart(String moduleResumeId, String query) {
         StringBuilder sql = new StringBuilder();
 
+        Object[] params = null;
+
+        if (!StringUtils.isEmpty(query)) {
+            sql.append("SELECT * FROM (");
+        }
         // TODO - 可以做成视图和缓存
         sql.append("SELECT                                                                    ");
         sql.append("    MP.MODULERESUMEID ,MP.PARTBARCODE ,MPA.PARTCODE ,                     ");
         sql.append("    MPA.CNAMES ,MP.PARTBARLISTCODE ,MP.PARTLISTCODE ,                     ");
-        sql.append("    MPS.NAME,MPA.QUANTITY , 'l',                                          ");
-        sql.append("(SELECT CASE  WHEN COUNT(ID) > 0 THEN 'craft-schedule-exits' ELSE ");
+        sql.append("    MPS.NAME,(SELECT SUM(QUANTITY) FROM MD_PART_LIST WHERE PARTBARCODE = MPA.PARTBARCODE) AS QUANTITY, 'l',                                          ");
+        sql.append("( SELECT CASE  WHEN COUNT(ID)>0 THEN 'craft-schedule-exits' ELSE ");
         sql.append("'craft-schedule-noexits' END FROM MD_EST_SCHEDULE WHERE PARTID=MP.PARTBARCODE AND MODULERESUMEID = ? ) cls");
         sql.append(" FROM ( SELECT                                                            ");
         sql.append("            MI.MODULERESUMEID ,MI.PARTBARLISTCODE ,                       ");
@@ -52,7 +58,15 @@ public class ModulePart extends ModelFinal<ModulePart> {
         sql.append("        ON MPA.PARTBARCODE = MP.PARTBARCODE LEFT JOIN MD_PROCESS_STATE MPS");
         sql.append("        ON MPS.ID = MP.PARTSTATEID ORDER BY MP.PARTBARLISTCODE            ");
 
-        return find(sql.toString(), moduleResumeId, moduleResumeId);
+        if (!StringUtils.isEmpty(query)) {
+            sql.append(") WHERE PARTCODE LIKE ?||'%'");
+            params = new Object[]{moduleResumeId, moduleResumeId, query};
+
+        } else {
+            params = new Object[]{moduleResumeId, moduleResumeId};
+        }
+
+        return find(sql.toString(), params);
     }
 
     /**

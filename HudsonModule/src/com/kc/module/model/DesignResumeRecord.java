@@ -54,13 +54,13 @@ public class DesignResumeRecord extends ModelFinal<DesignResumeRecord> {
      */
     public List<DesignResumeRecord> getProcessModuleInfo(boolean isall, String empid) {
         StringBuilder builder = new StringBuilder();
-        
+
         System.out.println(empid);
 
         builder.append("SELECT DRR.ID,ML.MODULEBARCODE,ML.MODULECODE,ML.GUESTID,ML.GUESTCODE,FY.SHORTNAME, ");
         builder.append("ML.MODULECLASS,ML.PRODUCTNAME,ML.WORKPRESSURE,ML.UNITEXTRAC,DRR.DEVISER,(SELECT NAME FROM REGION_DEPART WHERE ID = DRR.GROUPID) AS GROUPNAME, ");
         builder.append("(SELECT IMAGEPATH FROM MD_PRODUCT_INFO WHERE ID = (SELECT MIN(ID) FROM MD_PRODUCT_INFO WHERE MODULEBARCODE = ML.MODULEBARCODE))");
-        builder.append(" AS IMAGEPATH,DRR.TAKEON,DRR.STARTDATE,DRR.ENDDATE,DRR.ORDERDATE,DRR.DUEDATE,DRR.ACTUALSTART, ");
+        builder.append(" AS IMAGEPATH,DRR.TAKEON,DRR.STARTDATE,DRR.ENDDATE,MPS.NAME AS RESUMESTATE,DRR.ORDERDATE,DRR.DUEDATE,DRR.ACTUALSTART, ");
         builder.append("(SELECT COUNT(*) FROM DS_SCHEDULE_INFO WHERE DESIGNRESUMEID = DRR.ID AND PLANSTART IS NOT NULL AND FACTSTART ");
         builder.append("IS NULL AND SYSDATE > PLANSTART) AS ECNT, (SELECT COUNT(*) FROM DS_SCHEDULE_INFO WHERE DESIGNRESUMEID = DRR.ID");
         builder.append(" AND SCRAPPED = 0 AND STATEID NOT IN ('40205','40207')) AS FCNT FROM ");
@@ -68,16 +68,33 @@ public class DesignResumeRecord extends ModelFinal<DesignResumeRecord> {
         if (!isall) {
             builder.append("(SELECT DISTINCT DESIGNRESUMEID AS RESUMEID FROM DS_PROCESS_INFO WHERE EMPID = ?");
             builder.append(") DPI LEFT JOIN DS_RESUME_RECORD DRR  ON DPI.RESUMEID = DRR.ID LEFT JOIN MODULELIST ML");
-            builder.append(" ON DRR.MODULEBARCODE = ML.MODULEBARCODE LEFT JOIN FACTORY FY ON ML.GUESTID = FY.ID ORDER BY ML.MODULECODE");
+            builder.append(" ON DRR.MODULEBARCODE = ML.MODULEBARCODE LEFT JOIN FACTORY FY ON ML.GUESTID = FY.ID ");
+            builder.append("LEFT JOIN MD_PROCESS_STATE MPS ON DRR.STATEID = MPS.ID ORDER BY ML.MODULECODE");
 
             return this.find(builder.toString(), empid);
         } else {
             builder.append("(SELECT ID AS RESUMEID FROM DS_RESUME UNION (SELECT DISTINCT DESIGNRESUMEID AS RESUMEID FROM DS_PROCESS_INFO))");
             builder.append(" DPI LEFT JOIN DS_RESUME_RECORD DRR ON DPI.RESUMEID = DRR.ID LEFT JOIN MODULELIST ML ON DRR.MODULEBARCODE = ");
-            builder.append(" ML.MODULEBARCODE LEFT JOIN FACTORY FY ON ML.GUESTID = FY.ID ORDER BY ML.MODULECODE");
+            builder.append(" ML.MODULEBARCODE LEFT JOIN FACTORY FY ON ML.GUESTID = FY.ID LEFT JOIN MD_PROCESS_STATE MPS ON DRR.STATEID = MPS.ID");
+            builder.append(" ORDER BY ML.MODULECODE");
 
             return this.find(builder.toString());
         }
+    }
+
+    /**
+     * 通过模具唯一号查找设计履历信息
+     * 
+     * @param modulebarcode
+     * @return
+     */
+    public List<DesignResumeRecord> getDeviseResumeByModuleCode(String modulebarcode) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("SELECT DRR.ID,TO_CHAR(ACTIONTIME,'yyyymmdd') AS CDATE,MPS.NAME AS SNAME FROM DS_RESUME_RECORD DRR ");
+        builder.append("LEFT JOIN MD_PROCESS_STATE MPS ON DRR.STATEID = MPS.ID WHERE DRR.MODULEBARCODE = ? ORDER BY DRR.ACTIONTIME DESC");
+
+        return this.find(builder.toString(), modulebarcode);
     }
 
 }

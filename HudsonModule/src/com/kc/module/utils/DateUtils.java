@@ -864,4 +864,25 @@ public class DateUtils {
         Date transDate = DateUtils.strToDate(date, format);
         return (transDate != null);
     }
+    
+    /**
+     * 将ORACLE格式的时间转换为Java格式的时间
+     * 
+     * @param stamp
+     * @return
+     */
+    public static Date stampToDate(Timestamp stamp) {
+        return stamp == null ? stamp : new Date(stamp.getTime());
+    }
+    
+    /**
+     * 将ORACLE格式的时间转换为指定格式的字符串
+     * 
+     * @param stamp
+     * @param format
+     * @return
+     */
+    public static String formatStamp(Timestamp stamp, String format) {
+        return dateToStr(stampToDate(stamp), format == null ? DEFAULT_DATE_FORMAT : format);
+    }
 }
